@@ -7,6 +7,19 @@ import type{
 } from "@/types/scryfall";
 
 const SCRYFALL_API_ORIGIN = "https://api.scryfall.com"
+export class ScryfallApiError extends Error {
+    status: number;
+    code: string;
+
+    constructor(error: ScryfallError) {
+        super(error.details || "Scryfall could not complete the request");
+
+        this.name = "ScryfallApiError";
+        this.status = error.status;
+        this.code = error.code;
+
+    }
+}
 
 function combineFaceText(
     faces: ScryfallCardFace[] | null | undefined,
@@ -72,7 +85,7 @@ async function requestCardPage(url: URL): Promise<CardSearchPage> {
     if (!response.ok) {
         const error = payload as ScryfallError;
 
-        throw new Error(error.details || "Scryfall could not complete the request");
+        throw new ScryfallApiError(error);
     }
 
 const result = payload as ScryfallList<ScryfallCard>;

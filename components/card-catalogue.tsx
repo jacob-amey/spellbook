@@ -3,12 +3,14 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
 
-import { searchCards } from "@/lib/scryfall";
+import { ScryfallApiError, searchCards } from "@/lib/scryfall";
 import type { Card } from "@/types/card";
 
 const CARD_LIMIT = 12;
-
-export default function CardCatalogue() {
+type CardCatalogueProps = {
+  query: string;
+};
+export default function CardCatalogue({ query }: CardCatalogueProps) {
   const [cards, setCards] = useState<Card[]>([]);
   const [totalCards, setTotalCards] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -23,7 +25,7 @@ export default function CardCatalogue() {
       setErrorMessage(null);
 
       try {
-        const page = await searchCards("game:paper");
+        const page = await searchCards(query);
 
         if (ignore) {
           return;
@@ -38,11 +40,20 @@ export default function CardCatalogue() {
 
         setCards([]);
         setTotalCards(0);
-        setErrorMessage(
-          error instanceof Error
-            ? error.message
-            : "The card catalogue could not be loaded.",
-        );
+
+        if (
+          error instanceof ScryfallApiError &&
+          error.status === 404 &&
+          error.code === "not_found"
+        ) {
+          setErrorMessage(null);
+        } else {
+          setErrorMessage(
+            error instanceof Error
+              ? error.message
+              : "The card catalogue could not be loaded.",
+          );
+        }
       } finally {
         if (!ignore) {
           setIsLoading(false);
@@ -55,7 +66,7 @@ export default function CardCatalogue() {
     return () => {
       ignore = true;
     };
-  }, [requestNumber]);
+  }, [query, requestNumber]);
 
   if (isLoading) {
     return (
@@ -103,7 +114,9 @@ export default function CardCatalogue() {
         <h3 className="font-display text-2xl">No cards found</h3>
 
         <p className="mt-2 text-sm text-ink/65">
-          Try a different search when the search form is connected next.
+          {query
+            ? `No cards matched "${query}". Try another name or term.`
+            : "The catalogue did not return any cards."}
         </p>
       </div>
     );
@@ -112,7 +125,15 @@ export default function CardCatalogue() {
   return (
     <>
       <p className="mt-5 text-sm text-ink/60" aria-live="polite">
-        Showing {cards.length} of {totalCards.toLocaleString()} matching cards
+        Showing {cards.length} of {totalCards.toLocaleString()}
+        {query ? (
+          <>
+            {" "}
+            results for <strong>“{query}”</strong>
+          </>
+        ) : (
+          " matching cards"
+        )}
       </p>
 
       <div className="mt-9 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">

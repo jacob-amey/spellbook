@@ -1,6 +1,12 @@
+import Form from "next/form";
+import Link from "next/link";
+
 import CardCatalogue from "@/components/card-catalogue";
 
-export default function Home() {
+export default async function Home(props: PageProps<"/">) {
+  const searchParams = await props.searchParams;
+  const query = typeof searchParams.q === "string" ? searchParams.q.trim() : "";
+
   return (
     <main className="min-h-screen bg-paper text-ink">
       <section
@@ -43,49 +49,68 @@ export default function Home() {
             Search the archive
           </label>
 
-          <div className="grid grid-cols-[auto_1fr] items-center gap-1 bg-white p-1.5 sm:grid-cols-[auto_1fr_auto]">
+          <Form
+            action="/"
+            scroll={false}
+            className="grid grid-cols-[auto_1fr] items-center gap-1 bg-white p-1.5 sm:grid-cols-[auto_1fr_auto]"
+          >
             <span className="pl-3 text-2xl text-ink/60" aria-hidden="true">
               ⌕
             </span>
 
             <input
+              key={query}
               id="card-search"
+              name="q"
               type="search"
+              defaultValue={query}
               placeholder="Try “Black Lotus” or “t:dragon c:red”"
               className="min-w-0 bg-transparent px-3 py-3 text-ink outline-none placeholder:text-ink/45"
             />
 
             <button
-              type="button"
+              type="submit"
               className="col-span-2 bg-orange px-6 py-3 font-bold text-white transition hover:brightness-95 sm:col-span-1"
             >
               Search
             </button>
-          </div>
+          </Form>
 
           <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-white/70">
             <span>Try</span>
 
-            <button
-              type="button"
+            <Link
+              href={{
+                pathname: "/",
+                query: { q: "t:dragon t:legendary" },
+              }}
+              scroll={false}
               className="rounded-full border border-white/20 px-3 py-2 text-white transition hover:bg-white/10"
             >
               Legendary dragons
-            </button>
+            </Link>
 
-            <button
-              type="button"
+            <Link
+              href={{
+                pathname: "/",
+                query: { q: "t:instant c:u" },
+              }}
+              scroll={false}
               className="rounded-full border border-white/20 px-3 py-2 text-white transition hover:bg-white/10"
             >
               Blue instants
-            </button>
+            </Link>
 
-            <button
-              type="button"
+            <Link
+              href={{
+                pathname: "/",
+                query: { q: "usd<5 game:paper" },
+              }}
+              scroll={false}
               className="rounded-full border border-white/20 px-3 py-2 text-white transition hover:bg-white/10"
             >
               Under $5
-            </button>
+            </Link>
           </div>
         </div>
       </section>
@@ -102,7 +127,7 @@ export default function Home() {
           Explore the archive
         </h2>
 
-        <CardCatalogue />
+        <CardCatalogue key={query} query={query} />
       </section>
     </main>
   );
