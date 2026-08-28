@@ -1,6 +1,11 @@
+"use client";
+
 import Link from "next/link";
+import { useDecks } from "@/components/deck-provider";
 
 export function SiteHeader() {
+  const { decks, isReady } = useDecks();
+  const deckCount = isReady ? decks.length : 0;
   return (
     <header className="border-b border-ink/15 bg-paper">
       <nav
@@ -20,24 +25,15 @@ export function SiteHeader() {
         </Link>
 
         <div className="hidden items-center gap-8 text-sm md:flex">
-          <Link
-            href="/#search"
-            className="transition-colors hover:text-orange"
-          >
+          <Link href="/#search" className="transition-colors hover:text-orange">
             Discover
           </Link>
 
-          <Link
-            href="/#browse"
-            className="transition-colors hover:text-orange"
-          >
+          <Link href="/#browse" className="transition-colors hover:text-orange">
             Browse
           </Link>
 
-          <Link
-            href="/decks"
-            className="transition-colors hover:text-orange"
-          >
+          <Link href="/decks" className="transition-colors hover:text-orange">
             Deck Builder
           </Link>
         </div>
@@ -48,12 +44,10 @@ export function SiteHeader() {
         >
           Decks
           <span className="ml-2 inline-grid h-5 min-w-5 place-items-center rounded-full bg-ink px-1 text-[11px] text-white">
-            0
+            {deckCount}
           </span>
         </Link>
       </nav>
     </header>
   );
 }
-                        
-                        

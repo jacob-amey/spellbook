@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { DM_Sans, Playfair_Display } from "next/font/google";
-import { SiteHeader } from "../components/site-header";
 import "./globals.css";
+import { DeckProvider } from "@/components/deck-provider";
+import { SiteHeader } from "@/components/site-header";
 
 const sans = DM_Sans({
   variable: "--font-dm-sans",
@@ -26,8 +27,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${sans.variable} ${display.variable} antialiased`}
     >
       <body className="min-h-screen">
-        <SiteHeader />
-        {children}
+        <DeckProvider>
+          <SiteHeader />
+          {children}
+        </DeckProvider>
       </body>
     </html>
   );
