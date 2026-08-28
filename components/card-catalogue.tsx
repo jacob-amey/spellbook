@@ -1,7 +1,7 @@
 "use client";
 
-import Image from "next/image";
 import { useEffect, useState } from "react";
+import { CardTile } from "@/components/card-tile";
 
 import {
   ScryfallApiError,
@@ -226,50 +226,7 @@ export default function CardCatalogue({ query }: CardCatalogueProps) {
         className="mt-9 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3"
       >
         {visibleCards.map((card, index) => (
-          <article key={card.id} className="group">
-            {card.imageUrl ? (
-              <a
-                href={card.scryfallUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label={`View ${card.name} on Scryfall`}
-                className="block"
-              >
-                <Image
-                  src={card.imageUrl}
-                  alt={card.name}
-                  width={488}
-                  height={680}
-                  unoptimized
-                  loading={index === 0 ? "eager" : "lazy"}
-                  sizes="(min-width: 1024px) 28vw, (min-width: 640px) 44vw, 88vw"
-                  className="h-auto w-full rounded-[5%] shadow-[0_12px_28px_rgba(23,34,27,0.18)] transition duration-200 group-hover:-translate-y-1 group-hover:shadow-[0_18px_38px_rgba(23,34,27,0.24)]"
-                />
-              </a>
-            ) : (
-              <div className="grid aspect-[488/680] place-items-center rounded-[5%] bg-ink/10 p-6 text-center text-sm text-ink/55">
-                No card image available
-              </div>
-            )}
-
-            <div className="flex items-start justify-between gap-4 pt-4">
-              <div>
-                <h3 className="font-display text-xl leading-tight">
-                  {card.name}
-                </h3>
-
-                <p className="mt-1 text-xs text-ink/55">
-                  {card.setName} · {card.setCode.toUpperCase()}
-                </p>
-              </div>
-
-              <strong className="shrink-0 text-sm">
-                {card.priceUsd ? `$${card.priceUsd}` : "No price"}
-              </strong>
-            </div>
-
-            <p className="mt-2 text-xs text-ink/60">{card.typeLine}</p>
-          </article>
+          <CardTile key={card.id} card={card} eager={index === 0} />
         ))}
       </div>
 
