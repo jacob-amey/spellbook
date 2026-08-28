@@ -22,6 +22,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
+      data-scroll-behavior="smooth"
       className={`${sans.variable} ${display.variable} antialiased`}
     >
       <body className="min-h-screen">
