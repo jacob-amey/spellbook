@@ -3,18 +3,31 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
 
-import { ScryfallApiError, searchCards } from "@/lib/scryfall";
+import {
+  ScryfallApiError,
+  loadNextCardPage,
+  searchCards,
+} from "@/lib/scryfall";
 import type { Card } from "@/types/card";
 
-const CARD_LIMIT = 12;
+const CARD_BATCH_SIZE = 12;
+
 type CardCatalogueProps = {
   query: string;
 };
+
 export default function CardCatalogue({ query }: CardCatalogueProps) {
   const [cards, setCards] = useState<Card[]>([]);
   const [totalCards, setTotalCards] = useState(0);
+  const [hasMore, setHasMore] = useState(false);
+  const [nextPage, setNextPage] = useState<string | null>(null);
+  const [warnings, setWarnings] = useState<string[]>([]);
+  const [visibleCount, setVisibleCount] = useState(CARD_BATCH_SIZE);
+
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [loadMoreError, setLoadMoreError] = useState<string | null>(null);
   const [requestNumber, setRequestNumber] = useState(0);
 
   useEffect(() => {
@@ -23,6 +36,7 @@ export default function CardCatalogue({ query }: CardCatalogueProps) {
     async function loadCards() {
       setIsLoading(true);
       setErrorMessage(null);
+      setLoadMoreError(null);
 
       try {
         const page = await searchCards(query);
@@ -31,8 +45,12 @@ export default function CardCatalogue({ query }: CardCatalogueProps) {
           return;
         }
 
-        setCards(page.cards.slice(0, CARD_LIMIT));
+        setCards(page.cards);
         setTotalCards(page.totalCards);
+        setHasMore(page.hasMore);
+        setNextPage(page.nextPage);
+        setWarnings(page.warnings);
+        setVisibleCount(CARD_BATCH_SIZE);
       } catch (error) {
         if (ignore) {
           return;
@@ -40,6 +58,10 @@ export default function CardCatalogue({ query }: CardCatalogueProps) {
 
         setCards([]);
         setTotalCards(0);
+        setHasMore(false);
+        setNextPage(null);
+        setWarnings([]);
+        setVisibleCount(CARD_BATCH_SIZE);
 
         if (
           error instanceof ScryfallApiError &&
@@ -67,6 +89,54 @@ export default function CardCatalogue({ query }: CardCatalogueProps) {
       ignore = true;
     };
   }, [query, requestNumber]);
+
+  const visibleCards = cards.slice(0, visibleCount);
+  const hasHiddenCards = visibleCount < cards.length;
+  const canLoadMore = hasHiddenCards || (hasMore && nextPage !== null);
+
+  async function handleLoadMore() {
+    setLoadMoreError(null);
+
+    if (hasHiddenCards) {
+      setVisibleCount((currentCount) =>
+        Math.min(currentCount + CARD_BATCH_SIZE, cards.length),
+      );
+
+      return;
+    }
+
+    if (!hasMore || !nextPage || isLoadingMore) {
+      return;
+    }
+
+    setIsLoadingMore(true);
+
+    try {
+      const page = await loadNextCardPage(nextPage);
+
+      setCards((currentCards) => [...currentCards, ...page.cards]);
+
+      setVisibleCount(
+        (currentCount) =>
+          currentCount + Math.min(CARD_BATCH_SIZE, page.cards.length),
+      );
+
+      setHasMore(page.hasMore);
+      setNextPage(page.nextPage);
+
+      setWarnings((currentWarnings) =>
+        Array.from(new Set([...currentWarnings, ...page.warnings])),
+      );
+    } catch (error) {
+      setLoadMoreError(
+        error instanceof Error
+          ? error.message
+          : "More cards could not be loaded.",
+      );
+    } finally {
+      setIsLoadingMore(false);
+    }
+  }
 
   if (isLoading) {
     return (
@@ -125,7 +195,7 @@ export default function CardCatalogue({ query }: CardCatalogueProps) {
   return (
     <>
       <p className="mt-5 text-sm text-ink/60" aria-live="polite">
-        Showing {cards.length} of {totalCards.toLocaleString()}
+        Showing {visibleCards.length} of {totalCards.toLocaleString()}
         {query ? (
           <>
             {" "}
@@ -136,8 +206,26 @@ export default function CardCatalogue({ query }: CardCatalogueProps) {
         )}
       </p>
 
-      <div className="mt-9 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
-        {cards.map((card) => (
+      {warnings.length > 0 && (
+        <aside
+          className="mt-6 border border-orange/30 bg-paper p-5"
+          aria-label="Search warnings"
+        >
+          <h3 className="font-display text-xl">Search notes</h3>
+
+          <ul className="mt-2 list-disc space-y-1 pl-5 text-sm leading-6 text-ink/65">
+            {warnings.map((warning) => (
+              <li key={warning}>{warning}</li>
+            ))}
+          </ul>
+        </aside>
+      )}
+
+      <div
+        id="card-results"
+        className="mt-9 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3"
+      >
+        {visibleCards.map((card, index) => (
           <article key={card.id} className="group">
             {card.imageUrl ? (
               <a
@@ -153,6 +241,7 @@ export default function CardCatalogue({ query }: CardCatalogueProps) {
                   width={488}
                   height={680}
                   unoptimized
+                  loading={index === 0 ? "eager" : "lazy"}
                   sizes="(min-width: 1024px) 28vw, (min-width: 640px) 44vw, 88vw"
                   className="h-auto w-full rounded-[5%] shadow-[0_12px_28px_rgba(23,34,27,0.18)] transition duration-200 group-hover:-translate-y-1 group-hover:shadow-[0_18px_38px_rgba(23,34,27,0.24)]"
                 />
@@ -182,6 +271,29 @@ export default function CardCatalogue({ query }: CardCatalogueProps) {
             <p className="mt-2 text-xs text-ink/60">{card.typeLine}</p>
           </article>
         ))}
+      </div>
+
+      <div
+        className="mt-12 flex flex-col items-center gap-3"
+        aria-busy={isLoadingMore}
+      >
+        {loadMoreError && (
+          <p className="text-sm text-orange" role="alert">
+            {loadMoreError}
+          </p>
+        )}
+
+        {canLoadMore && (
+          <button
+            type="button"
+            onClick={handleLoadMore}
+            disabled={isLoadingMore}
+            aria-controls="card-results"
+            className="bg-forest px-6 py-3 text-sm font-bold text-white transition hover:bg-ink disabled:cursor-wait disabled:opacity-60"
+          >
+            {isLoadingMore ? "Loading more cards..." : "Load more cards"}
+          </button>
+        )}
       </div>
     </>
   );
