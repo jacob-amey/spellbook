@@ -63,7 +63,7 @@ export function normalizeScryfallCard(card: ScryfallCard): Card {
 async function requestCardPage(url: URL): Promise<CardSearchPage> {
     const response = await fetch(url, {
         headers:{
-            Accept: "application/json;0.9,*/*;q=0.8",
+            Accept: "application/json;q=0.9,*/*;q=0.8",
         },
     });
 
