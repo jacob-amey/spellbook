@@ -1,10 +1,6 @@
 "use client";
 
-import {
-  createContext,
-  useContext,
-  useSyncExternalStore,
-} from "react";
+import { createContext, useContext, useSyncExternalStore } from "react";
 import type { ReactNode } from "react";
 
 import type { Deck, DeckFormat } from "@/types/deck";
@@ -18,11 +14,23 @@ const EMPTY_DECKS: Deck[] = [];
 type DeckContextValue = {
   decks: Deck[];
   isReady: boolean;
-  createDeck: (
-    name: string,
-    format: DeckFormat,
-  ) => string | null;
+  createDeck: (name: string, format: DeckFormat) => string | null;
+  deleteDeck: (deckId: string) => boolean;
 };
+
+function deleteDeck(deckId: string): boolean {
+  const currentDecks = getDeckSnapshot();
+
+  const nextDecks = currentDecks.filter(
+    (deck) => deck.id !== deckId,
+  );
+
+  if (nextDecks.length === currentDecks.length) {
+    return false;
+  }
+
+  return saveDecks(nextDecks);
+}
 
 type DeckProviderProps = {
   children: ReactNode;
@@ -30,16 +38,12 @@ type DeckProviderProps = {
 
 type StoreListener = () => void;
 
-const DeckContext = createContext<DeckContextValue | null>(
-  null,
-);
+const DeckContext = createContext<DeckContextValue | null>(null);
 
 let cachedStorageValue: string | null | undefined;
 let cachedDecks: Deck[] = EMPTY_DECKS;
 
-function parseStoredDecks(
-  storedValue: string | null,
-): Deck[] {
+function parseStoredDecks(storedValue: string | null): Deck[] {
   if (!storedValue) {
     return EMPTY_DECKS;
   }
@@ -68,8 +72,7 @@ function getDeckSnapshot(): Deck[] {
   let storedValue: string | null;
 
   try {
-    storedValue =
-      window.localStorage.getItem(STORAGE_KEY);
+    storedValue = window.localStorage.getItem(STORAGE_KEY);
   } catch {
     return cachedDecks;
   }
@@ -88,14 +91,9 @@ function getServerDeckSnapshot(): Deck[] {
   return EMPTY_DECKS;
 }
 
-function subscribeToDecks(
-  listener: StoreListener,
-): () => void {
+function subscribeToDecks(listener: StoreListener): () => void {
   function handleStorage(event: StorageEvent) {
-    if (
-      event.key === STORAGE_KEY ||
-      event.key === null
-    ) {
+    if (event.key === STORAGE_KEY || event.key === null) {
       listener();
     }
   }
@@ -105,17 +103,11 @@ function subscribeToDecks(
   }
 
   window.addEventListener("storage", handleStorage);
-  window.addEventListener(
-    DECKS_CHANGED_EVENT,
-    handleDeckChange,
-  );
+  window.addEventListener(DECKS_CHANGED_EVENT, handleDeckChange);
 
   return () => {
     window.removeEventListener("storage", handleStorage);
-    window.removeEventListener(
-      DECKS_CHANGED_EVENT,
-      handleDeckChange,
-    );
+    window.removeEventListener(DECKS_CHANGED_EVENT, handleDeckChange);
   };
 }
 
@@ -126,10 +118,7 @@ function saveDecks(decks: Deck[]): boolean {
   });
 
   try {
-    window.localStorage.setItem(
-      STORAGE_KEY,
-      storedValue,
-    );
+    window.localStorage.setItem(STORAGE_KEY, storedValue);
   } catch {
     return false;
   }
@@ -137,9 +126,7 @@ function saveDecks(decks: Deck[]): boolean {
   cachedStorageValue = storedValue;
   cachedDecks = decks;
 
-  window.dispatchEvent(
-    new Event(DECKS_CHANGED_EVENT),
-  );
+  window.dispatchEvent(new Event(DECKS_CHANGED_EVENT));
 
   return true;
 }
@@ -156,9 +143,7 @@ function getServerReady(): boolean {
   return false;
 }
 
-export function DeckProvider({
-  children,
-}: DeckProviderProps) {
+export function DeckProvider({ children }: DeckProviderProps) {
   const decks = useSyncExternalStore(
     subscribeToDecks,
     getDeckSnapshot,
@@ -171,10 +156,7 @@ export function DeckProvider({
     getServerReady,
   );
 
-  function createDeck(
-    name: string,
-    format: DeckFormat,
-  ): string | null {
+  function createDeck(name: string, format: DeckFormat): string | null {
     const trimmedName = name.trim();
 
     if (!trimmedName) {
@@ -194,10 +176,7 @@ export function DeckProvider({
     };
 
     const currentDecks = getDeckSnapshot();
-    const wasSaved = saveDecks([
-      ...currentDecks,
-      newDeck,
-    ]);
+    const wasSaved = saveDecks([...currentDecks, newDeck]);
 
     return wasSaved ? deckId : null;
   }
@@ -208,6 +187,7 @@ export function DeckProvider({
         decks,
         isReady,
         createDeck,
+        deleteDeck,
       }}
     >
       {children}
@@ -219,9 +199,7 @@ export function useDecks(): DeckContextValue {
   const context = useContext(DeckContext);
 
   if (!context) {
-    throw new Error(
-      "useDecks must be used inside DeckProvider.",
-    );
+    throw new Error("useDecks must be used inside DeckProvider.");
   }
 
   return context;
