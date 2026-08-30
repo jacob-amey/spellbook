@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { CardTile } from "@/components/card-tile";
+import { AddToDeckControl } from "@/components/decks/add-to-deck-control";
 
 import {
   ScryfallApiError,
@@ -226,7 +227,12 @@ export default function CardCatalogue({ query }: CardCatalogueProps) {
         className="mt-9 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3"
       >
         {visibleCards.map((card, index) => (
-          <CardTile key={card.id} card={card} eager={index === 0} />
+          <CardTile
+            key={card.id}
+            card={card}
+            eager={index === 0}
+            actions={<AddToDeckControl card={card} />}
+          />
         ))}
       </div>
 

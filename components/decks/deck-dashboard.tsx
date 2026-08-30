@@ -1,33 +1,21 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import type { FormEvent } from "react";
 
 import { useDecks } from "@/components/deck-provider";
+import { DeckImportControl } from "@/components/decks/deck-import-control";
 import {
-  DECK_FORMATS,
-  type DeckFormat,
-} from "@/types/deck";
+  formatDeckFormat,
+  isDeckFormat,
+} from "@/lib/deck-operations";
+import { DECK_FORMATS } from "@/types/deck";
 
 type Feedback = {
   kind: "success" | "error";
   message: string;
 };
-
-function isDeckFormat(
-  value: FormDataEntryValue | null,
-): value is DeckFormat {
-  return (
-    typeof value === "string" &&
-    DECK_FORMATS.some((format) => format === value)
-  );
-}
-
-function formatDeckFormat(format: DeckFormat): string {
-  return (
-    format.charAt(0).toUpperCase() + format.slice(1)
-  );
-}
 
 function countDeckCards(
   cards: {
@@ -147,18 +135,22 @@ export function DeckDashboard() {
 
   return (
     <section className="mt-10 border border-ink/15 bg-parchment p-6 sm:p-8">
-      <div className="flex items-center justify-between gap-4 border-b border-ink/15 pb-5">
+      <div className="flex flex-col justify-between gap-4 border-b border-ink/15 pb-5 sm:flex-row sm:items-start">
         <h2 className="font-display text-3xl">
           Your decks
         </h2>
 
-        <span className="text-sm text-ink/55">
-          {isReady
-            ? `${decks.length} ${
-                decks.length === 1 ? "deck" : "decks"
-              }`
-            : "Loading…"}
-        </span>
+        <div className="flex flex-wrap items-start gap-4 sm:justify-end">
+          <DeckImportControl />
+
+          <span className="pt-2 text-sm text-ink/55">
+            {isReady
+              ? `${decks.length} ${
+                  decks.length === 1 ? "deck" : "decks"
+                }`
+              : "Loading…"}
+          </span>
+        </div>
       </div>
 
       <form
@@ -274,7 +266,12 @@ export function DeckDashboard() {
               >
                 <div>
                   <h3 className="font-display text-2xl">
-                    {deck.name}
+                    <Link
+                      href={`/decks/${deck.id}`}
+                      className="transition hover:text-orange"
+                    >
+                      {deck.name}
+                    </Link>
                   </h3>
 
                   <p className="mt-1 text-sm text-ink/60">
@@ -290,51 +287,62 @@ export function DeckDashboard() {
                   </p>
                 </div>
 
-                {isConfirmingDelete ? (
-                  <div
-                    className="flex flex-wrap items-center gap-2"
-                    aria-label={`Confirm deletion of ${deck.name}`}
-                  >
-                    <span className="mr-1 text-xs font-bold text-orange">
-                      Delete this deck?
-                    </span>
+                <div className="flex flex-wrap items-center gap-3">
+                  {!isConfirmingDelete && (
+                    <Link
+                      href={`/decks/${deck.id}`}
+                      className="bg-forest px-4 py-2 text-sm font-bold text-white transition hover:bg-ink"
+                    >
+                      Open builder
+                    </Link>
+                  )}
 
+                  {isConfirmingDelete ? (
+                    <div
+                      className="flex flex-wrap items-center gap-2"
+                      aria-label={`Confirm deletion of ${deck.name}`}
+                    >
+                      <span className="mr-1 text-xs font-bold text-orange">
+                        Delete this deck?
+                      </span>
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setPendingDeleteId(null)
+                        }
+                        className="border border-ink/20 px-3 py-2 text-xs font-bold transition hover:border-ink"
+                      >
+                        Cancel
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          handleDeleteDeck(
+                            deck.id,
+                            deck.name,
+                          )
+                        }
+                        className="bg-orange px-3 py-2 text-xs font-bold text-white transition hover:brightness-90"
+                      >
+                        Confirm delete
+                      </button>
+                    </div>
+                  ) : (
                     <button
                       type="button"
-                      onClick={() =>
-                        setPendingDeleteId(null)
-                      }
-                      className="border border-ink/20 px-3 py-2 text-xs font-bold transition hover:border-ink"
+                      onClick={() => {
+                        setPendingDeleteId(deck.id);
+                        setFeedback(null);
+                      }}
+                      aria-label={`Delete ${deck.name}`}
+                      className="text-sm font-bold text-orange transition hover:text-ink"
                     >
-                      Cancel
+                      Delete
                     </button>
-
-                    <button
-                      type="button"
-                      onClick={() =>
-                        handleDeleteDeck(
-                          deck.id,
-                          deck.name,
-                        )
-                      }
-                      className="bg-orange px-3 py-2 text-xs font-bold text-white transition hover:brightness-90"
-                    >
-                      Confirm delete
-                    </button>
-                  </div>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setPendingDeleteId(deck.id);
-                      setFeedback(null);
-                    }}
-                    aria-label={`Delete ${deck.name}`}
-                    className="self-start text-sm font-bold text-orange transition hover:text-ink sm:self-auto"
-                  >
-                    Delete
-                  </button>
-                )}
+                  )}
+                </div>
               </li>
             );
           })}
