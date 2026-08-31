@@ -24,12 +24,12 @@ const COLOR_DETAILS: Record<
   DeckColorCategory,
   { name: string; className: string }
 > = {
-  W: { name: "White", className: "bg-amber-100 text-ink" },
-  U: { name: "Blue", className: "bg-blue-500 text-white" },
+  W: { name: "White", className: "bg-amber-100 text-night" },
+  U: { name: "Blue", className: "bg-blue-700 text-white" },
   B: { name: "Black", className: "bg-zinc-800 text-white" },
-  R: { name: "Red", className: "bg-red-500 text-white" },
-  G: { name: "Green", className: "bg-emerald-600 text-white" },
-  C: { name: "Colorless", className: "bg-stone-300 text-ink" },
+  R: { name: "Red", className: "bg-red-700 text-white" },
+  G: { name: "Green", className: "bg-emerald-700 text-white" },
+  C: { name: "Colorless", className: "bg-stone-300 text-night" },
 };
 
 export function DeckStatistics({

@@ -9,7 +9,7 @@ export const metadata: Metadata = {
     "Create and manage Magic: The Gathering decks.",
 };
 
-const plannedFeatures = [
+const builderCapabilities = [
   "Create and manage multiple decks",
   "Add cards from search results",
   "Manage card quantities and deck zones",
@@ -20,9 +20,12 @@ const plannedFeatures = [
 
 export default function DecksPage() {
   return (
-    <main className="min-h-[calc(100vh-76px)] bg-paper px-6 py-16 text-ink lg:px-[7vw] lg:py-24">
+    <main
+      id="main-content"
+      className="min-h-[calc(100vh-76px)] bg-paper/70 px-6 py-16 text-ink lg:px-[7vw] lg:py-24"
+    >
       <div className="mx-auto max-w-6xl">
-        <p className="mb-4 text-[11px] font-extrabold tracking-[0.19em] text-ink/60">
+        <p className="mb-4 text-[11px] font-extrabold tracking-[0.19em] text-orange">
           THE DECK WORKSHOP
         </p>
 
@@ -41,26 +44,26 @@ export default function DecksPage() {
             <DeckDashboard />
           </section>
 
-          <aside className="self-start bg-forest p-7 text-cream sm:p-9">
-            <p className="text-[11px] font-extrabold tracking-[0.17em] text-white/60">
-              BUILDER ROADMAP
+          <aside className="self-start border border-orange/20 bg-forest/80 p-7 text-cream shadow-[14px_14px_0_rgb(230_161_95_/_0.1)] sm:p-9">
+            <p className="text-[11px] font-extrabold tracking-[0.17em] text-orange">
+              BUILDER SYSTEM
             </p>
 
             <h2 className="mt-3 font-display text-3xl">
-              What this workspace will do
+              Built for the full process
             </h2>
 
             <ol className="mt-7 space-y-5">
-              {plannedFeatures.map((feature, index) => (
+              {builderCapabilities.map((feature, index) => (
                 <li
                   key={feature}
                   className="grid grid-cols-[32px_1fr] items-start gap-3"
                 >
-                  <span className="grid h-8 w-8 place-items-center rounded-full border border-white/25 text-xs font-bold">
+                  <span className="grid h-8 w-8 place-items-center rounded-full border border-orange/35 text-xs font-bold text-orange">
                     {index + 1}
                   </span>
 
-                  <span className="pt-1 text-sm leading-6 text-white/80">
+                  <span className="pt-1 text-sm leading-6 text-cream/80">
                     {feature}
                   </span>
                 </li>

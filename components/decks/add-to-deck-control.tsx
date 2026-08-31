@@ -140,7 +140,7 @@ export function AddToDeckControl({
 
           <button
             type="submit"
-            className="bg-forest px-4 py-2 text-sm font-bold text-white transition hover:bg-ink"
+            className="bg-forest px-4 py-2 text-sm font-bold text-cream transition hover:bg-fern"
           >
             Add
           </button>
@@ -152,7 +152,7 @@ export function AddToDeckControl({
           className={`mt-2 text-xs ${
             feedback.kind === "error"
               ? "text-orange"
-              : "text-forest"
+              : "text-moss"
           }`}
           role={
             feedback.kind === "error" ? "alert" : "status"

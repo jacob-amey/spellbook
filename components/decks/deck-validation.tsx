@@ -42,7 +42,7 @@ export function DeckValidation({
 
       {analysis.issues.length === 0 ? (
         <p
-          className="mt-5 border border-forest/20 bg-forest/5 p-4 text-sm font-bold text-forest"
+          className="mt-5 border border-moss/25 bg-moss/10 p-4 text-sm font-bold text-moss"
           role="status"
         >
           No deck-building issues detected.
@@ -55,7 +55,7 @@ export function DeckValidation({
               className={`border-l-4 p-3 text-sm leading-6 ${
                 issue.severity === "error"
                   ? "border-orange bg-orange/5"
-                  : "border-amber-500 bg-amber-50"
+                  : "border-amber-400 bg-amber-400/10"
               }`}
             >
               <strong className="mr-2 text-xs uppercase tracking-wide">

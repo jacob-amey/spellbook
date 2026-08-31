@@ -1,43 +1,81 @@
 @import "tailwindcss";
 
 :root {
-  --paper: #fbf8f1;
-  --parchment: #ece4d5;
-  --ink: #17221b;
-  --forest: #183a2a;
-  --orange: #e46b39;
-  --cream: #f5f0e5;
+  --paper: #0b1210;
+  --parchment: #121e19;
+  --ink: #eee8dc;
+  --forest: #1c4735;
+  --fern: #2d6a4f;
+  --moss: #91c4a5;
+  --orange: #e6a15f;
+  --cream: #f7edda;
+  --night: #07100c;
 }
 
 @theme inline {
- --color-paper: var(--paper);
- --color-parchment: var(--parchment);
- --color-ink: var(--ink);
- --color-forest: var(--forest);
- --color-orange: var(--orange);
- --color-cream: var(--cream);
+  --color-paper: var(--paper);
+  --color-parchment: var(--parchment);
+  --color-ink: var(--ink);
+  --color-forest: var(--forest);
+  --color-fern: var(--fern);
+  --color-moss: var(--moss);
+  --color-orange: var(--orange);
+  --color-cream: var(--cream);
+  --color-night: var(--night);
 
- --font-sans: var(--font-dm-sans);
- --font-display: var(--font-playfair);
+  --font-sans: var(--font-dm-sans);
+  --font-display: var(--font-playfair);
 }
 
 * {
   box-sizing: border-box;
 }
 
-html{
+html {
   scroll-behavior: smooth;
 }
 
 body {
-margin:0;
-background: var(--paper);
-color: var(--ink);
-font-family: var(--font-dm-sans), sans-serif;
+  margin: 0;
+  background-color: var(--paper);
+  background-image:
+    radial-gradient(circle at 12% -8%, rgb(45 106 79 / 22%), transparent 34rem),
+    radial-gradient(circle at 92% 16%, rgb(230 161 95 / 8%), transparent 30rem),
+    linear-gradient(rgb(255 255 255 / 1.2%) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(255 255 255 / 1.2%) 1px, transparent 1px);
+  background-size: auto, auto, 48px 48px, 48px 48px;
+  color: var(--ink);
+  font-family: var(--font-dm-sans), sans-serif;
+  color-scheme: dark;
 }
 
 button,
 input,
 select {
   font: inherit;
+}
+
+::selection {
+  background: var(--orange);
+  color: var(--night);
+}
+
+:focus-visible {
+  outline: 3px solid var(--orange);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
 }

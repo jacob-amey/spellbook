@@ -134,7 +134,7 @@ export function DeckDashboard() {
   }
 
   return (
-    <section className="mt-10 border border-ink/15 bg-parchment p-6 sm:p-8">
+    <section className="mt-10 border border-orange/15 bg-parchment/90 p-6 shadow-[0_24px_80px_rgb(0_0_0_/_0.2)] sm:p-8">
       <div className="flex flex-col justify-between gap-4 border-b border-ink/15 pb-5 sm:flex-row sm:items-start">
         <h2 className="font-display text-3xl">
           Your decks
@@ -203,7 +203,7 @@ export function DeckDashboard() {
           <button
             type="submit"
             disabled={!isReady}
-            className="bg-forest px-5 py-3 text-sm font-bold text-white transition hover:bg-ink disabled:cursor-wait disabled:opacity-50"
+            className="bg-forest px-5 py-3 text-sm font-bold text-cream transition hover:bg-fern disabled:cursor-wait disabled:opacity-50"
           >
             Create deck
           </button>
@@ -220,7 +220,7 @@ export function DeckDashboard() {
           className={`mt-4 text-sm ${
             feedback.kind === "error"
               ? "text-orange"
-              : "text-forest"
+              : "text-moss"
           }`}
         >
           {feedback.message}
@@ -291,7 +291,7 @@ export function DeckDashboard() {
                   {!isConfirmingDelete && (
                     <Link
                       href={`/decks/${deck.id}`}
-                      className="bg-forest px-4 py-2 text-sm font-bold text-white transition hover:bg-ink"
+                      className="bg-forest px-4 py-2 text-sm font-bold text-cream transition hover:bg-fern"
                     >
                       Open builder
                     </Link>
@@ -324,7 +324,7 @@ export function DeckDashboard() {
                             deck.name,
                           )
                         }
-                        className="bg-orange px-3 py-2 text-xs font-bold text-white transition hover:brightness-90"
+                        className="bg-orange px-3 py-2 text-xs font-bold text-night transition hover:brightness-110"
                       >
                         Confirm delete
                       </button>

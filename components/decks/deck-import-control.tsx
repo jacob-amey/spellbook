@@ -102,7 +102,7 @@ export function DeckImportControl() {
           className={`mt-2 text-xs ${
             feedback.kind === "error"
               ? "text-orange"
-              : "text-forest"
+              : "text-moss"
           }`}
           role={
             feedback.kind === "error" ? "alert" : "status"

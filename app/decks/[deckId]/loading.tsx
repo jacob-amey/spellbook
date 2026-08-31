@@ -1,6 +1,9 @@
 export default function LoadingDeck() {
   return (
-    <main className="min-h-[calc(100vh-76px)] bg-parchment px-6 py-16 text-ink lg:px-[5vw]">
+    <main
+      id="main-content"
+      className="min-h-[calc(100vh-76px)] bg-parchment px-6 py-16 text-ink lg:px-[5vw]"
+    >
       <div
         className="mx-auto max-w-7xl animate-pulse"
         aria-busy="true"

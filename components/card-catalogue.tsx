@@ -18,6 +18,7 @@ type CardCatalogueProps = {
 };
 
 export default function CardCatalogue({ query }: CardCatalogueProps) {
+  const isFeaturedSelection = query.length === 0;
   const [cards, setCards] = useState<Card[]>([]);
   const [totalCards, setTotalCards] = useState(0);
   const [hasMore, setHasMore] = useState(false);
@@ -171,7 +172,7 @@ export default function CardCatalogue({ query }: CardCatalogueProps) {
         <button
           type="button"
           onClick={() => setRequestNumber((number) => number + 1)}
-          className="mt-5 bg-orange px-5 py-3 text-sm font-bold text-white transition hover:brightness-95"
+          className="mt-5 bg-orange px-5 py-3 text-sm font-bold text-night transition hover:brightness-110"
         >
           Try again
         </button>
@@ -195,17 +196,31 @@ export default function CardCatalogue({ query }: CardCatalogueProps) {
 
   return (
     <>
-      <p className="mt-5 text-sm text-ink/60" aria-live="polite">
-        Showing {visibleCards.length} of {totalCards.toLocaleString()}
-        {query ? (
-          <>
-            {" "}
-            results for <strong>“{query}”</strong>
-          </>
-        ) : (
-          " matching cards"
+      <div className="mt-5 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
+        <p className="text-sm text-ink/60" aria-live="polite">
+          {isFeaturedSelection ? (
+            <>
+              Showing {visibleCards.length} cards drawn from the complete
+              paper archive
+            </>
+          ) : (
+            <>
+              Showing {visibleCards.length} of {totalCards.toLocaleString()}{" "}
+              results for <strong>“{query}”</strong>
+            </>
+          )}
+        </p>
+
+        {isFeaturedSelection && (
+          <button
+            type="button"
+            onClick={() => setRequestNumber((number) => number + 1)}
+            className="shrink-0 border border-orange/45 bg-orange/10 px-4 py-2 text-xs font-extrabold uppercase tracking-[0.12em] text-orange transition hover:bg-orange hover:text-night"
+          >
+            Draw another selection
+          </button>
         )}
-      </p>
+      </div>
 
       {warnings.length > 0 && (
         <aside
@@ -252,7 +267,7 @@ export default function CardCatalogue({ query }: CardCatalogueProps) {
             onClick={handleLoadMore}
             disabled={isLoadingMore}
             aria-controls="card-results"
-            className="bg-forest px-6 py-3 text-sm font-bold text-white transition hover:bg-ink disabled:cursor-wait disabled:opacity-60"
+            className="bg-forest px-6 py-3 text-sm font-bold text-cream transition hover:bg-fern disabled:cursor-wait disabled:opacity-60"
           >
             {isLoadingMore ? "Loading more cards..." : "Load more cards"}
           </button>

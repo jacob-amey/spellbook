@@ -132,7 +132,10 @@ export function DeckEditor({ deckId }: DeckEditorProps) {
 
   if (!isReady) {
     return (
-      <main className="min-h-[calc(100vh-76px)] bg-paper px-6 py-16 text-ink lg:px-[7vw]">
+      <main
+        id="main-content"
+        className="min-h-[calc(100vh-76px)] bg-paper px-6 py-16 text-ink lg:px-[7vw]"
+      >
         <div
           className="mx-auto max-w-7xl animate-pulse"
           aria-busy="true"
@@ -148,7 +151,10 @@ export function DeckEditor({ deckId }: DeckEditorProps) {
 
   if (!deck || !analysis) {
     return (
-      <main className="grid min-h-[calc(100vh-76px)] place-items-center bg-paper px-6 py-20 text-ink">
+      <main
+        id="main-content"
+        className="grid min-h-[calc(100vh-76px)] place-items-center bg-paper px-6 py-20 text-ink"
+      >
         <div className="max-w-xl text-center">
           <p className="text-5xl" aria-hidden="true">
             ◇
@@ -162,7 +168,7 @@ export function DeckEditor({ deckId }: DeckEditorProps) {
           </p>
           <Link
             href="/decks"
-            className="mt-7 inline-block bg-forest px-5 py-3 text-sm font-bold text-white transition hover:bg-ink"
+            className="mt-7 inline-block bg-forest px-5 py-3 text-sm font-bold text-cream transition hover:bg-fern"
           >
             Return to your decks
           </Link>
@@ -177,7 +183,10 @@ export function DeckEditor({ deckId }: DeckEditorProps) {
       : ["mainboard", "sideboard", "commander"];
 
   return (
-    <main className="min-h-[calc(100vh-76px)] bg-parchment px-6 py-12 text-ink lg:px-[5vw] lg:py-16">
+    <main
+      id="main-content"
+      className="min-h-[calc(100vh-76px)] bg-parchment px-6 py-12 text-ink lg:px-[5vw] lg:py-16"
+    >
       <div className="mx-auto max-w-7xl">
         <Link
           href="/decks"
@@ -259,7 +268,7 @@ export function DeckEditor({ deckId }: DeckEditorProps) {
                   <button
                     type="button"
                     onClick={handleDeleteDeck}
-                    className="bg-orange px-3 py-2 text-xs font-bold text-white"
+                    className="bg-orange px-3 py-2 text-xs font-bold text-night"
                   >
                     Confirm delete
                   </button>
@@ -294,12 +303,12 @@ export function DeckEditor({ deckId }: DeckEditorProps) {
 
         <div className="mt-8 grid gap-8 xl:grid-cols-[minmax(0,1fr)_360px]">
           <div className="space-y-6">
-            <div className="flex flex-wrap items-center justify-between gap-4 border border-forest/20 bg-forest p-5 text-white">
+            <div className="flex flex-wrap items-center justify-between gap-4 border border-orange/20 bg-forest p-5 text-cream">
               <div>
                 <h2 className="font-display text-2xl">
                   Add cards from the archive
                 </h2>
-                <p className="mt-1 text-sm text-white/70">
+                <p className="mt-1 text-sm text-cream/70">
                   Search for any card, then choose this deck from the
                   result tile.
                 </p>
@@ -307,7 +316,7 @@ export function DeckEditor({ deckId }: DeckEditorProps) {
 
               <Link
                 href="/#search"
-                className="bg-orange px-5 py-3 text-sm font-bold text-white transition hover:brightness-95"
+                className="bg-orange px-5 py-3 text-sm font-bold text-night transition hover:brightness-110"
               >
                 Search cards
               </Link>

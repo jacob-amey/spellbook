@@ -27,6 +27,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${sans.variable} ${display.variable} antialiased`}
     >
       <body className="min-h-screen">
+        <a
+          href="#main-content"
+          className="fixed left-4 top-3 z-[100] -translate-y-20 bg-orange px-4 py-3 text-sm font-bold text-night transition focus:translate-y-0"
+        >
+          Skip to main content
+        </a>
+
         <DeckProvider>
           <SiteHeader />
           {children}
