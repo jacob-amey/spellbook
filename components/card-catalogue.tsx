@@ -9,16 +9,21 @@ import {
   loadNextCardPage,
   searchCards,
 } from "@/lib/scryfall";
+import type { ScryfallSortOrder } from "@/lib/scryfall";
 import type { Card } from "@/types/card";
 
 const CARD_BATCH_SIZE = 12;
 
 type CardCatalogueProps = {
   query: string;
+  sortOrder?: ScryfallSortOrder;
 };
 
-export default function CardCatalogue({ query }: CardCatalogueProps) {
-  const isFeaturedSelection = query.length === 0;
+export default function CardCatalogue({
+  query,
+  sortOrder = "name",
+}: CardCatalogueProps) {
+  const isFeaturedSelection = query.trim().length === 0;
   const [cards, setCards] = useState<Card[]>([]);
   const [totalCards, setTotalCards] = useState(0);
   const [hasMore, setHasMore] = useState(false);
@@ -41,7 +46,7 @@ export default function CardCatalogue({ query }: CardCatalogueProps) {
       setLoadMoreError(null);
 
       try {
-        const page = await searchCards(query);
+        const page = await searchCards(query, sortOrder);
 
         if (ignore) {
           return;
@@ -90,7 +95,7 @@ export default function CardCatalogue({ query }: CardCatalogueProps) {
     return () => {
       ignore = true;
     };
-  }, [query, requestNumber]);
+  }, [query, requestNumber, sortOrder]);
 
   const visibleCards = cards.slice(0, visibleCount);
   const hasHiddenCards = visibleCount < cards.length;
@@ -200,13 +205,13 @@ export default function CardCatalogue({ query }: CardCatalogueProps) {
         <p className="text-sm text-ink/60" aria-live="polite">
           {isFeaturedSelection ? (
             <>
-              Showing {visibleCards.length} cards drawn from the complete
+              Showing {visibleCards.length} randomly drawn cards from the
               paper archive
             </>
           ) : (
             <>
               Showing {visibleCards.length} of {totalCards.toLocaleString()}{" "}
-              results for <strong>“{query}”</strong>
+              matching cards
             </>
           )}
         </p>

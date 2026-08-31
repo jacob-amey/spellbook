@@ -73,10 +73,10 @@ export default function DecksPage() {
         </div>
 
         <Link
-          href="/"
+          href="/explore"
           className="mt-10 inline-block text-sm font-bold text-orange transition hover:translate-x-[-2px]"
         >
-          ← Return to card search
+          ← Return to Explore
         </Link>
       </div>
     </main>

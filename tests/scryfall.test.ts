@@ -79,11 +79,12 @@ describe("Scryfall catalogue loading", () => {
     );
     vi.stubGlobal("fetch", fetchMock);
 
-    const result = await searchCards("  Lightning Bolt  ");
+    const result = await searchCards("  Lightning Bolt  ", "released");
     const requestedUrl = new URL(fetchMock.mock.calls[0][0] as URL);
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(requestedUrl.searchParams.get("q")).toBe("Lightning Bolt");
+    expect(requestedUrl.searchParams.get("order")).toBe("released");
     expect(requestedUrl.searchParams.has("page")).toBe(false);
     expect(result.cards[0].name).toBe("Lightning Bolt");
   });

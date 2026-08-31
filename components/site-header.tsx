@@ -25,12 +25,12 @@ export function SiteHeader() {
         </Link>
 
         <div className="hidden items-center gap-8 text-xs font-bold uppercase tracking-[0.12em] text-ink/70 md:flex">
-          <Link href="/#search" className="transition-colors hover:text-orange">
-            Discover
+          <Link href="/" className="transition-colors hover:text-orange">
+            Home
           </Link>
 
-          <Link href="/#browse" className="transition-colors hover:text-orange">
-            Browse
+          <Link href="/explore" className="transition-colors hover:text-orange">
+            Explore
           </Link>
 
           <Link href="/decks" className="transition-colors hover:text-orange">
@@ -38,15 +38,24 @@ export function SiteHeader() {
           </Link>
         </div>
 
-        <Link
-          href="/decks"
-          className="justify-self-end rounded-full border border-ink/15 bg-ink/5 px-4 py-2 text-sm font-bold transition-colors hover:border-orange hover:text-orange"
-        >
-          Decks
-          <span className="ml-2 inline-grid h-5 min-w-5 place-items-center rounded-full bg-orange px-1 text-[11px] text-night">
-            {deckCount}
-          </span>
-        </Link>
+        <div className="flex items-center gap-2 justify-self-end">
+          <Link
+            href="/explore"
+            className="rounded-full border border-ink/15 px-3 py-2 text-xs font-bold transition-colors hover:border-orange hover:text-orange md:hidden"
+          >
+            Explore
+          </Link>
+
+          <Link
+            href="/decks"
+            className="rounded-full border border-ink/15 bg-ink/5 px-4 py-2 text-sm font-bold transition-colors hover:border-orange hover:text-orange"
+          >
+            Decks
+            <span className="ml-2 inline-grid h-5 min-w-5 place-items-center rounded-full bg-orange px-1 text-[11px] text-night">
+              {deckCount}
+            </span>
+          </Link>
+        </div>
       </nav>
     </header>
   );

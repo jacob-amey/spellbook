@@ -1,36 +1,82 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Spellbook
 
-## Getting Started
+Spellbook is a responsive Magic: The Gathering discovery and deck-building
+application built with Next.js, React, TypeScript, and Tailwind CSS.
 
-First, run the development server:
+It combines live card data from the Scryfall API with a browser-based deck
+workspace. The project is designed to demonstrate production-oriented frontend
+engineering: typed external data, URL-driven search state, reusable components,
+local persistence, domain validation, automated testing, accessibility, and
+continuous integration.
+
+## Features
+
+- A randomized 20-card homepage rail with keyboard and touch scrolling
+- A dedicated Explore page with shareable URL filters
+- Filters for card name or rules text, color, mana value, type, rarity, and format
+- Sorting by name, release date, mana value, rarity, color, price, or EDHREC rank
+- Paginated Scryfall results with loading, empty, warning, and error states
+- Reusable card tiles with direct add-to-deck controls
+- Multiple locally saved decks with rename, format, zone, and quantity management
+- Mana-curve, card-type, and color-identity analysis
+- Format and Commander color-identity validation
+- JSON and text import/export
+- Responsive dark interface with keyboard focus and reduced-motion support
+- Unit tests, coverage thresholds, type checking, linting, and GitHub Actions CI
+
+## Routes
+
+- `/` — focused homepage, global search entry, and randomized card rail
+- `/explore` — randomized grid, advanced filters, sorting, and search results
+- `/decks` — saved deck dashboard
+- `/decks/[deckId]` — complete deck editor and analysis workspace
+
+## Tech stack
+
+- Next.js App Router
+- React
+- TypeScript
+- Tailwind CSS
+- Vitest with V8 coverage
+- Scryfall REST API
+- Browser `localStorage` for device-local deck persistence
+
+## Local development
+
+This project expects the Node version declared in [`.nvmrc`](./.nvmrc).
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Quality checks
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run check
+npm run test:coverage
+npm run build
+```
 
-## Learn More
+`npm run check` runs ESLint, TypeScript, and the unit test suite. The same
+checks run in continuous integration.
 
-To learn more about Next.js, take a look at the following resources:
+## Architecture notes
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- Card API response types live in `types/scryfall.ts`.
+- `lib/scryfall.ts` owns Scryfall requests, normalization, pagination, sorting,
+  and randomized page selection.
+- `lib/card-filters.ts` validates URL parameters and translates interface
+  filters into Scryfall search syntax.
+- Deck domain behavior is separated into operations, analysis, and serialization
+  modules under `lib/`.
+- React context provides browser-local deck state to search and deck routes.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Data and trademarks
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Card data and images are provided by [Scryfall](https://scryfall.com).
+Spellbook is an independent educational project and is not affiliated with or
+endorsed by Wizards of the Coast. Magic: The Gathering and its related marks
+belong to their respective owners.

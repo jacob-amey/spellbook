@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { DM_Sans, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import { DeckProvider } from "@/components/deck-provider";
+import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 
 const sans = DM_Sans({
@@ -15,8 +16,9 @@ const display = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: "Spellbook — MTG Card Search",
-  description: "Search and explore Magic: The Gathering cards.",
+  title: "Spellbook — MTG Card Search & Deck Builder",
+  description:
+    "Discover Magic: The Gathering cards, explore the Scryfall archive with powerful filters, and build decks locally.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
@@ -37,6 +39,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <DeckProvider>
           <SiteHeader />
           {children}
+          <SiteFooter />
         </DeckProvider>
       </body>
     </html>

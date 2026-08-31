@@ -315,7 +315,7 @@ export function DeckEditor({ deckId }: DeckEditorProps) {
               </div>
 
               <Link
-                href="/#search"
+                href="/explore"
                 className="bg-orange px-5 py-3 text-sm font-bold text-night transition hover:brightness-110"
               >
                 Search cards

@@ -33,6 +33,7 @@
 
 html {
   scroll-behavior: smooth;
+  scroll-padding-top: 76px;
 }
 
 body {
@@ -63,6 +64,29 @@ select {
 :focus-visible {
   outline: 3px solid var(--orange);
   outline-offset: 3px;
+}
+
+.card-rail {
+  overscroll-behavior-inline: contain;
+  scrollbar-color: rgb(230 161 95 / 55%) transparent;
+  scrollbar-width: thin;
+}
+
+.card-rail::-webkit-scrollbar {
+  height: 8px;
+}
+
+.card-rail::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.card-rail::-webkit-scrollbar-thumb {
+  background: rgb(230 161 95 / 45%);
+  border-radius: 999px;
+}
+
+.card-rail::-webkit-scrollbar-thumb:hover {
+  background: var(--orange);
 }
 
 @media (prefers-reduced-motion: reduce) {

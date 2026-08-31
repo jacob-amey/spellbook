@@ -10,6 +10,18 @@ const SCRYFALL_API_ORIGIN = "https://api.scryfall.com";
 const SCRYFALL_PAGE_SIZE = 175;
 const FEATURED_QUERY = "game:paper";
 
+export const SCRYFALL_SORT_ORDERS = [
+  "name",
+  "released",
+  "rarity",
+  "color",
+  "usd",
+  "cmc",
+  "edhrec",
+] as const;
+
+export type ScryfallSortOrder = (typeof SCRYFALL_SORT_ORDERS)[number];
+
 export class ScryfallApiError extends Error {
   status: number;
   code: string;
@@ -90,12 +102,16 @@ export function shuffleCards<T>(
   return shuffled;
 }
 
-function createSearchUrl(query: string, page?: number): URL {
+function createSearchUrl(
+  query: string,
+  order: ScryfallSortOrder = "name",
+  page?: number,
+): URL {
   const url = new URL("/cards/search", SCRYFALL_API_ORIGIN);
 
   url.searchParams.set("q", query);
   url.searchParams.set("unique", "cards");
-  url.searchParams.set("order", "name");
+  url.searchParams.set("order", order);
 
   if (page !== undefined) {
     url.searchParams.set("page", page.toString());
@@ -143,7 +159,7 @@ export async function loadFeaturedCards(
     randomPageNumber === 1
       ? firstPage
       : await requestCardPage(
-          createSearchUrl(FEATURED_QUERY, randomPageNumber),
+          createSearchUrl(FEATURED_QUERY, "name", randomPageNumber),
         );
 
   return {
@@ -152,14 +168,17 @@ export async function loadFeaturedCards(
   };
 }
 
-export async function searchCards(query: string): Promise<CardSearchPage> {
+export async function searchCards(
+  query: string,
+  order: ScryfallSortOrder = "name",
+): Promise<CardSearchPage> {
   const trimmedQuery = query.trim();
 
   if (!trimmedQuery) {
     return loadFeaturedCards();
   }
 
-  return requestCardPage(createSearchUrl(trimmedQuery));
+  return requestCardPage(createSearchUrl(trimmedQuery, order));
 }
 
 export async function loadNextCardPage(
