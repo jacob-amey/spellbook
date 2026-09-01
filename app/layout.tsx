@@ -28,6 +28,18 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       data-scroll-behavior="smooth"
       className={`${sans.variable} ${display.variable} antialiased`}
     >
+      <head>
+        <link
+          rel="preconnect"
+          href="https://api.scryfall.com"
+          crossOrigin="anonymous"
+        />
+        <link
+          rel="preconnect"
+          href="https://cards.scryfall.io"
+          crossOrigin="anonymous"
+        />
+      </head>
       <body className="min-h-screen">
         <a
           href="#main-content"

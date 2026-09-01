@@ -114,57 +114,28 @@ describe("Scryfall catalogue loading", () => {
     expect(requestedUrl.searchParams.get("order")).toBe("usd");
   });
 
-  it("chooses and shuffles a random page for featured cards", async () => {
-    const fetchMock = vi
-      .fn()
-      .mockResolvedValueOnce(
-        jsonResponse(
-          createList([createScryfallCard("first", "First Page Card")], {
-            has_more: true,
-            next_page:
-              "https://api.scryfall.com/cards/search?q=game%3Apaper&page=2",
-            total_cards: 350,
-          }),
-        ),
-      )
-      .mockResolvedValueOnce(
-        jsonResponse(
-          createList(
-            [
-              createScryfallCard("alpha", "Alpha"),
-              createScryfallCard("beta", "Beta"),
-            ],
-            { total_cards: 350 },
-          ),
-        ),
-      );
-    vi.stubGlobal("fetch", fetchMock);
-
-    const randomValues = [0.75, 0];
-    const result = await loadFeaturedCards(
-      () => randomValues.shift() ?? 0,
-    );
-    const requestedUrl = new URL(fetchMock.mock.calls[1][0] as URL);
-
-    expect(fetchMock).toHaveBeenCalledTimes(2);
-    expect(requestedUrl.searchParams.get("q")).toBe("game:paper");
-    expect(requestedUrl.searchParams.get("page")).toBe("2");
-    expect(result.cards.map((card) => card.name)).toEqual([
-      "Beta",
-      "Alpha",
-    ]);
-  });
-
-  it("uses the first page when a random draw does not select another page", async () => {
+  it("loads and shuffles featured cards with one random-order request", async () => {
     const fetchMock = vi.fn().mockResolvedValue(
-      jsonResponse(createList([createScryfallCard("alpha", "Alpha")])),
+      jsonResponse(
+        createList([
+          createScryfallCard("alpha", "Alpha"),
+          createScryfallCard("beta", "Beta"),
+        ]),
+      ),
     );
     vi.stubGlobal("fetch", fetchMock);
 
     const result = await loadFeaturedCards(() => 0);
+    const requestedUrl = new URL(fetchMock.mock.calls[0][0] as URL);
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
-    expect(result.cards[0].name).toBe("Alpha");
+    expect(requestedUrl.searchParams.get("q")).toBe("game:paper");
+    expect(requestedUrl.searchParams.get("order")).toBe("random");
+    expect(requestedUrl.searchParams.has("page")).toBe(false);
+    expect(result.cards.map((card) => card.name)).toEqual([
+      "Beta",
+      "Alpha",
+    ]);
   });
 
   it("uses the featured-card path for a blank search", async () => {

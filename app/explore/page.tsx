@@ -3,6 +3,10 @@ import Link from "next/link";
 
 import CardCatalogue from "@/components/card-catalogue";
 import {
+  ExploreFilterForm,
+  ExploreFilterSubmit,
+} from "@/components/explore-filter-form";
+import {
   CARD_TYPE_OPTIONS,
   COLOR_MATCH_OPTIONS,
   COLOR_OPTIONS,
@@ -104,7 +108,7 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
               )}
             </div>
 
-            <form action="/explore" method="get" className="mt-5 space-y-5">
+            <ExploreFilterForm className="mt-5 space-y-5">
               <div>
                 <label htmlFor="explore-query" className="text-sm font-bold">
                   Name, rules text, or syntax
@@ -286,10 +290,13 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
                 </div>
               </fieldset>
 
-              <button type="submit" className="min-h-12 w-full bg-orange px-5 py-3 text-sm font-bold text-night transition hover:brightness-110">
-                Apply filters
-              </button>
-            </form>
+              <p className="text-xs leading-5 text-ink/60">
+                Choice filters update immediately. Typed searches and ranges
+                update after a short pause.
+              </p>
+
+              <ExploreFilterSubmit />
+            </ExploreFilterForm>
           </aside>
 
           <section aria-labelledby="explore-results-heading" className="min-w-0">

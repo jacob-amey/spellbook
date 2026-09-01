@@ -11,7 +11,6 @@ import type {
 } from "@/types/scryfall";
 
 const SCRYFALL_API_ORIGIN = "https://api.scryfall.com";
-const SCRYFALL_PAGE_SIZE = 175;
 const FEATURED_QUERY = "game:paper";
 
 export const SCRYFALL_SORT_ORDERS = [
@@ -26,6 +25,8 @@ export const SCRYFALL_SORT_ORDERS = [
 
 export type ScryfallSortOrder = (typeof SCRYFALL_SORT_ORDERS)[number];
 export type ScryfallUniqueMode = "cards" | "prints";
+
+type ScryfallRequestOrder = ScryfallSortOrder | "random";
 
 export class ScryfallApiError extends Error {
   status: number;
@@ -158,7 +159,7 @@ export function shuffleCards<T>(
 
 function createSearchUrl(
   query: string,
-  order: ScryfallSortOrder = "name",
+  order: ScryfallRequestOrder = "name",
   unique: ScryfallUniqueMode = "cards",
   page?: number,
 ): URL {
@@ -175,9 +176,12 @@ function createSearchUrl(
   return url;
 }
 
-async function requestCardPage(url: URL): Promise<CardSearchPage> {
+async function requestCardPage(
+  url: URL,
+  signal?: AbortSignal,
+): Promise<CardSearchPage> {
   const response = await fetch(url, {
-    cache: "no-store",
+    signal,
     headers: {
       Accept: "application/json;q=0.9,*/*;q=0.8",
     },
@@ -202,25 +206,12 @@ async function requestCardPage(url: URL): Promise<CardSearchPage> {
 
 export async function loadFeaturedCards(
   random: () => number = Math.random,
+  signal?: AbortSignal,
 ): Promise<CardSearchPage> {
-  const firstPage = await requestCardPage(createSearchUrl(FEATURED_QUERY));
-  const pageCount = Math.max(
-    1,
-    Math.ceil(firstPage.totalCards / SCRYFALL_PAGE_SIZE),
+  const selectedPage = await requestCardPage(
+    createSearchUrl(FEATURED_QUERY, "random"),
+    signal,
   );
-  const randomPageNumber = Math.floor(random() * pageCount) + 1;
-
-  const selectedPage =
-    randomPageNumber === 1
-      ? firstPage
-      : await requestCardPage(
-          createSearchUrl(
-            FEATURED_QUERY,
-            "name",
-            "cards",
-            randomPageNumber,
-          ),
-        );
 
   return {
     ...selectedPage,
@@ -232,14 +223,18 @@ export async function searchCards(
   query: string,
   order: ScryfallSortOrder = "name",
   unique: ScryfallUniqueMode = "cards",
+  signal?: AbortSignal,
 ): Promise<CardSearchPage> {
   const trimmedQuery = query.trim();
 
   if (!trimmedQuery) {
-    return loadFeaturedCards();
+    return loadFeaturedCards(Math.random, signal);
   }
 
-  return requestCardPage(createSearchUrl(trimmedQuery, order, unique));
+  return requestCardPage(
+    createSearchUrl(trimmedQuery, order, unique),
+    signal,
+  );
 }
 
 export async function loadNextCardPage(

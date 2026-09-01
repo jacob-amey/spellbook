@@ -4,15 +4,56 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
-import { ScryfallApiError, loadFeaturedCards } from "@/lib/scryfall";
+import {
+  ScryfallApiError,
+  loadFeaturedCards,
+  shuffleCards,
+} from "@/lib/scryfall";
 import type { Card } from "@/types/card";
 
 const FEATURED_CARD_LIMIT = 20;
 
+let featuredCardPool: Card[] | null = null;
+let featuredCardPoolRequest: Promise<Card[]> | null = null;
+
+function getFeaturedCardPool(): Promise<Card[]> {
+  if (featuredCardPool) {
+    return Promise.resolve(featuredCardPool);
+  }
+
+  if (!featuredCardPoolRequest) {
+    featuredCardPoolRequest = loadFeaturedCards()
+      .then((page) => {
+        featuredCardPool = page.cards;
+
+        return page.cards;
+      })
+      .finally(() => {
+        featuredCardPoolRequest = null;
+      });
+  }
+
+  return featuredCardPoolRequest;
+}
+
+function drawFromPool(pool: Card[], previousCards: Card[] = []): Card[] {
+  const previousIds = new Set(previousCards.map((card) => card.id));
+  const unseenCards = shuffleCards(
+    pool.filter((card) => !previousIds.has(card.id)),
+  );
+  const previousSelection = shuffleCards(
+    pool.filter((card) => previousIds.has(card.id)),
+  );
+
+  return [...unseenCards, ...previousSelection].slice(0, FEATURED_CARD_LIMIT);
+}
+
 export function FeaturedCardRail() {
   const railRef = useRef<HTMLUListElement>(null);
-  const [cards, setCards] = useState<Card[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [cards, setCards] = useState<Card[]>(() =>
+    featuredCardPool ? drawFromPool(featuredCardPool) : [],
+  );
+  const [isLoading, setIsLoading] = useState(featuredCardPool === null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [requestNumber, setRequestNumber] = useState(0);
 
@@ -20,14 +61,12 @@ export function FeaturedCardRail() {
     let ignore = false;
 
     async function drawCards() {
-      setIsLoading(true);
-      setErrorMessage(null);
-
       try {
-        const page = await loadFeaturedCards();
+        const pool = await getFeaturedCardPool();
 
         if (!ignore) {
-          setCards(page.cards.slice(0, FEATURED_CARD_LIMIT));
+          setCards((currentCards) => drawFromPool(pool, currentCards));
+          setErrorMessage(null);
         }
       } catch (error) {
         if (ignore) {
@@ -53,6 +92,20 @@ export function FeaturedCardRail() {
       ignore = true;
     };
   }, [requestNumber]);
+
+  function drawCards() {
+    if (!featuredCardPool) {
+      setIsLoading(true);
+      setRequestNumber((number) => number + 1);
+
+      return;
+    }
+
+    setCards((currentCards) =>
+      drawFromPool(featuredCardPool ?? [], currentCards),
+    );
+    railRef.current?.scrollTo({ left: 0, behavior: "smooth" });
+  }
 
   function scrollRail(direction: -1 | 1) {
     const rail = railRef.current;
@@ -102,7 +155,7 @@ export function FeaturedCardRail() {
         </p>
         <button
           type="button"
-          onClick={() => setRequestNumber((number) => number + 1)}
+          onClick={drawCards}
           className="mt-5 bg-orange px-5 py-3 text-sm font-bold text-night transition hover:brightness-110"
         >
           Try again
@@ -137,7 +190,7 @@ export function FeaturedCardRail() {
           </button>
           <button
             type="button"
-            onClick={() => setRequestNumber((number) => number + 1)}
+            onClick={drawCards}
             className="ml-1 border border-orange/40 bg-orange/10 px-4 py-2.5 text-xs font-extrabold uppercase tracking-[0.11em] text-orange transition hover:bg-orange hover:text-night"
           >
             Draw 20 new cards
@@ -171,7 +224,8 @@ export function FeaturedCardRail() {
                       height={680}
                       sizes="236px"
                       unoptimized
-                      loading={index === 0 ? "eager" : "lazy"}
+                      loading={index < 3 ? "eager" : "lazy"}
+                      fetchPriority={index === 0 ? "high" : "auto"}
                       className="h-auto w-full transition duration-300 group-hover:scale-[1.015]"
                     />
                   ) : (

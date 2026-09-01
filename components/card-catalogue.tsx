@@ -46,6 +46,7 @@ export default function CardCatalogue({
 
   useEffect(() => {
     let ignore = false;
+    const controller = new AbortController();
 
     async function loadCards() {
       setIsLoading(true);
@@ -53,7 +54,12 @@ export default function CardCatalogue({
       setLoadMoreError(null);
 
       try {
-        const page = await searchCards(query, sortOrder, unique);
+        const page = await searchCards(
+          query,
+          sortOrder,
+          unique,
+          controller.signal,
+        );
 
         if (ignore) {
           return;
@@ -66,7 +72,7 @@ export default function CardCatalogue({
         setWarnings(page.warnings);
         setVisibleCount(CARD_BATCH_SIZE);
       } catch (error) {
-        if (ignore) {
+        if (ignore || controller.signal.aborted) {
           return;
         }
 
@@ -101,6 +107,7 @@ export default function CardCatalogue({
 
     return () => {
       ignore = true;
+      controller.abort();
     };
   }, [query, requestNumber, sortOrder, unique]);
 
