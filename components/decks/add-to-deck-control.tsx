@@ -76,7 +76,7 @@ export function AddToDeckControl({
 
   if (!isReady) {
     return (
-      <p className="text-xs text-ink/45" role="status">
+      <p className="text-xs text-ink/65" role="status">
         Loading saved decks…
       </p>
     );

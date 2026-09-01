@@ -16,9 +16,12 @@ export default defineConfig({
     coverage: {
       provider: "v8",
       include: [
+        "lib/backend-config.ts",
+        "lib/card-filters.ts",
         "lib/deck-operations.ts",
         "lib/deck-analysis.ts",
         "lib/deck-serialization.ts",
+        "lib/scryfall.ts",
       ],
       reporter: ["text", "html"],
       thresholds: {

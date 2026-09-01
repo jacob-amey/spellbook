@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildScryfallQuery,
   getActiveFilterLabels,
+  getQueryExplanations,
   parseExploreFilters,
 } from "@/lib/card-filters";
 
@@ -11,28 +12,33 @@ describe("Explore card filters", () => {
     const filters = parseExploreFilters({});
 
     expect(filters.sort).toBe("name");
+    expect(filters.view).toBe("grid");
+    expect(filters.unique).toBe("cards");
     expect(buildScryfallQuery(filters)).toBe("");
     expect(getActiveFilterLabels(filters)).toEqual([]);
   });
 
-  it("turns submitted controls into a Scryfall search", () => {
+  it("turns common controls into an exact Scryfall search", () => {
     const filters = parseExploreFilters({
-      q: "o:flying",
-      color: "blue",
-      mv: "3",
+      q: "angel",
+      color: ["W", "U"],
+      colorMode: "identity",
+      mvMin: "3",
+      mvMax: "6",
       type: "creature",
       rarity: "rare",
       format: "commander",
       sort: "released",
+      view: "detail",
     });
 
     expect(buildScryfallQuery(filters)).toBe(
-      "o:flying c:blue mv=3 t:creature r:rare f:commander game:paper",
+      "angel id<=WU mv>=3 mv<=6 t:creature r:rare f:commander game:paper",
     );
     expect(getActiveFilterLabels(filters)).toEqual([
-      "Search: “o:flying”",
-      "Blue",
-      "3",
+      "Search: “angel”",
+      "Fits this Commander identity: WU",
+      "Mana value 3–6",
       "Creature",
       "Rare",
       "Commander",
@@ -40,15 +46,43 @@ describe("Explore card filters", () => {
     ]);
   });
 
-  it("supports special range and multicolor filters", () => {
+  it("supports research filters, ranges, and every printing", () => {
     const filters = parseExploreFilters({
-      color: "multicolor",
-      mv: "6-plus",
+      colorless: "true",
+      mvMin: "4",
+      mvMax: "4",
+      subtype: "Equipment",
+      oracle: "draw a card",
+      keyword: "first strike",
+      set: "MKM",
+      artist: "Rebecca Guay",
+      priceMin: "0.5",
+      priceMax: "10",
+      releasedAfter: "2000-01-01",
+      releasedBefore: "2026-12-31",
+      unique: "prints",
+      view: "compact",
     });
 
     expect(buildScryfallQuery(filters)).toBe(
-      "c>1 mv>=6 game:paper",
+      'c=c mv=4 t:"Equipment" o:"draw a card" keyword:first-strike set:mkm a:"Rebecca Guay" usd>=0.5 usd<=10 date>=2000-01-01 date<=2026-12-31 game:paper',
     );
+    expect(filters.unique).toBe("prints");
+    expect(filters.view).toBe("compact");
+    expect(getQueryExplanations(filters).map(({ label }) => label)).toEqual([
+      "Color relationship",
+      "Mana value",
+      "Subtype",
+      "Oracle text",
+      "Keyword",
+      "Set",
+      "Artist",
+      "Minimum price",
+      "Maximum price",
+      "Released after",
+      "Released before",
+      "Paper cards",
+    ]);
   });
 
   it("uses a full paper search when only sorting is changed", () => {
@@ -60,25 +94,77 @@ describe("Explore card filters", () => {
     ]);
   });
 
-  it("ignores unsupported or repeated URL values", () => {
+  it("normalizes unsupported, unsafe, or out-of-range URL values", () => {
     const filters = parseExploreFilters({
       q: ["one", "two"],
-      color: "purple",
-      mv: "999",
+      color: ["W", "purple", "W"],
+      colorMode: "exclude",
+      mvMin: "-1",
+      mvMax: "999",
       type: "tribal",
       rarity: "premium",
       format: "future",
+      set: "not a set",
+      priceMin: "free",
+      releasedAfter: "yesterday",
+      unique: "art",
+      view: "poster",
       sort: "random",
     });
 
     expect(filters).toEqual({
       query: "",
-      color: "",
-      manaValue: "",
+      colors: ["W"],
+      colorless: false,
+      colorMode: "include",
+      manaMin: "",
+      manaMax: "",
       cardType: "",
+      subtype: "",
+      oracleText: "",
+      keyword: "",
+      setCode: "",
       rarity: "",
       format: "",
+      artist: "",
+      priceMin: "",
+      priceMax: "",
+      releasedAfter: "",
+      releasedBefore: "",
+      unique: "cards",
+      view: "grid",
       sort: "name",
     });
+  });
+
+  it("sanitizes quoted filter values before building a query", () => {
+    const filters = parseExploreFilters({
+      oracle: 'when "this" \\ happens',
+    });
+
+    expect(buildScryfallQuery(filters)).toBe(
+      'o:"when this happens" game:paper',
+    );
+  });
+
+  it("supports exact and inclusive color matching", () => {
+    const exact = parseExploreFilters({ color: ["B", "R"], colorMode: "exact" });
+    const inclusive = parseExploreFilters({ color: "G" });
+
+    expect(buildScryfallQuery(exact)).toBe("c=BR game:paper");
+    expect(buildScryfallQuery(inclusive)).toBe("c>=G game:paper");
+    expect(getQueryExplanations(exact)[0].description).toContain("exactly");
+    expect(getQueryExplanations(inclusive)[0].description).toContain("may include others");
+  });
+
+  it("explains a direct query and omits explanations for a random draw", () => {
+    const searched = parseExploreFilters({ q: "pow>=5" });
+    const random = parseExploreFilters({});
+
+    expect(getQueryExplanations(searched)[0]).toMatchObject({
+      token: "pow>=5",
+      label: "Your search",
+    });
+    expect(getQueryExplanations(random)).toEqual([]);
   });
 });

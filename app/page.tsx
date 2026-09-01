@@ -1,6 +1,7 @@
-import Form from "next/form";
 import Link from "next/link";
 
+import { CardSearch } from "@/components/card-search";
+import { ContinueDeck } from "@/components/continue-deck";
 import { FeaturedCardRail } from "@/components/featured-card-rail";
 
 const quickSearches = [
@@ -52,36 +53,8 @@ export default function Home() {
             </p>
           </div>
 
-          <div id="search" role="search" className="mt-10 max-w-4xl">
-            <Form
-              action="/explore"
-              className="grid border border-orange/25 bg-cream p-1.5 text-night shadow-[12px_12px_0_rgb(230_161_95_/_0.1)] sm:grid-cols-[auto_1fr_auto]"
-            >
-              <span
-                className="hidden place-items-center px-4 text-2xl text-night/55 sm:grid"
-                aria-hidden="true"
-              >
-                ⌕
-              </span>
-
-              <label htmlFor="home-card-search" className="sr-only">
-                Search cards
-              </label>
-              <input
-                id="home-card-search"
-                name="q"
-                type="search"
-                placeholder="Search a card name or try t:dragon c:red"
-                className="min-w-0 bg-transparent px-4 py-4 text-night outline-none placeholder:text-night/45"
-              />
-
-              <button
-                type="submit"
-                className="bg-orange px-7 py-4 font-bold text-night transition hover:brightness-110"
-              >
-                Explore cards
-              </button>
-            </Form>
+          <div id="search" className="mt-10 max-w-4xl">
+            <CardSearch id="home-card-search" />
 
             <div className="mt-5 flex flex-wrap items-center gap-2 text-xs text-ink/55">
               <span className="mr-1 font-bold uppercase tracking-[0.11em]">
@@ -113,7 +86,30 @@ export default function Home() {
               </Link>
             </div>
           </div>
+
+          <div className="mt-10 max-w-2xl">
+            <ContinueDeck />
+          </div>
         </div>
+      </section>
+
+      <section
+        className="border-y border-orange/15 bg-night/35 px-6 py-8 lg:px-[7vw]"
+        aria-label="Spellbook workflow"
+      >
+        <ol className="mx-auto grid max-w-7xl gap-px border border-ink/10 bg-ink/10 md:grid-cols-3">
+          {[
+            ["01", "Discover", "Search the complete paper archive with precise, shareable filters."],
+            ["02", "Research", "Compare printings, prices, legalities, Oracle text, and rulings."],
+            ["03", "Build", "Add cards directly to locally saved decks and validate your list."],
+          ].map(([number, title, detail]) => (
+            <li key={number} className="bg-paper/90 p-6">
+              <span className="text-xs font-extrabold tracking-[0.14em] text-orange">{number}</span>
+              <h2 className="mt-3 font-display text-2xl">{title}</h2>
+              <p className="mt-2 text-sm leading-6 text-ink/65">{detail}</p>
+            </li>
+          ))}
+        </ol>
       </section>
 
       <section

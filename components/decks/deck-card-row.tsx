@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import type { ChangeEvent } from "react";
 
 import { useDecks } from "@/components/deck-provider";
@@ -94,12 +95,10 @@ export function DeckCardRow({
 
   return (
     <li className="grid gap-4 border-b border-ink/10 py-4 last:border-b-0 sm:grid-cols-[64px_1fr_auto] sm:items-center">
-      <a
-        href={card.scryfallUrl}
-        target="_blank"
-        rel="noreferrer"
+      <Link
+        href={`/cards/${card.id}`}
         className="hidden overflow-hidden rounded sm:block"
-        aria-label={`View ${card.name} on Scryfall`}
+        aria-label={`View details for ${card.name}`}
       >
         {card.imageUrl ? (
           <Image
@@ -112,21 +111,19 @@ export function DeckCardRow({
             className="h-auto w-full"
           />
         ) : (
-          <span className="grid aspect-[64/89] place-items-center bg-parchment text-xs text-ink/45">
+          <span className="grid aspect-[64/89] place-items-center bg-parchment text-xs text-ink/65">
             No image
           </span>
         )}
-      </a>
+      </Link>
 
       <div className="min-w-0">
-        <a
-          href={card.scryfallUrl}
-          target="_blank"
-          rel="noreferrer"
+        <Link
+          href={`/cards/${card.id}`}
           className="font-display text-xl font-bold transition hover:text-orange"
         >
           {card.name}
-        </a>
+        </Link>
 
         <p className="mt-1 text-sm text-ink/60">
           {card.typeLine}

@@ -1,4 +1,8 @@
-import type { Card, CardSearchPage } from "@/types/card";
+import type {
+  Card,
+  CardDetails,
+  CardSearchPage,
+} from "@/types/card";
 import type {
   ScryfallCard,
   ScryfallCardFace,
@@ -21,6 +25,7 @@ export const SCRYFALL_SORT_ORDERS = [
 ] as const;
 
 export type ScryfallSortOrder = (typeof SCRYFALL_SORT_ORDERS)[number];
+export type ScryfallUniqueMode = "cards" | "prints";
 
 export class ScryfallApiError extends Error {
   status: number;
@@ -84,6 +89,55 @@ export function normalizeScryfallCard(card: ScryfallCard): Card {
   };
 }
 
+export function normalizeScryfallCardDetails(
+  card: ScryfallCard,
+): CardDetails {
+  const normalizedCard = normalizeScryfallCard(card);
+
+  return {
+    ...normalizedCard,
+    rarity: card.rarity,
+    language: card.lang,
+    layout: card.layout,
+    setType: card.set_type,
+    flavorText: card.flavor_text ?? "",
+    loyalty: card.loyalty ?? null,
+    printedName: card.printed_name ?? null,
+    printedText: card.printed_text ?? null,
+    printedTypeLine: card.printed_type_line ?? null,
+    cardFaces:
+      card.card_faces?.map((face) => ({
+        name: face.name,
+        manaCost: face.mana_cost ?? "",
+        typeLine: face.type_line ?? "",
+        oracleText: face.oracle_text ?? "",
+        flavorText: face.flavor_text ?? "",
+        artist: face.artist ?? card.artist ?? null,
+        power: face.power ?? null,
+        toughness: face.toughness ?? null,
+        loyalty: face.loyalty ?? null,
+        imageUrl: face.image_uris?.normal ?? null,
+      })) ?? [],
+    prices: {
+      usd: card.prices.usd ?? null,
+      usdFoil: card.prices.usd_foil ?? null,
+      usdEtched: card.prices.usd_etched ?? null,
+      eur: card.prices.eur ?? null,
+      eurFoil: card.prices.eur_foil ?? null,
+      tix: card.prices.tix ?? null,
+    },
+    finishes: [...card.finishes],
+    foil: card.foil,
+    nonfoil: card.nonfoil,
+    promo: card.promo,
+    purchaseUris: {
+      tcgplayer: card.purchase_uris?.tcgplayer ?? null,
+      cardmarket: card.purchase_uris?.cardmarket ?? null,
+      cardhoarder: card.purchase_uris?.cardhoarder ?? null,
+    },
+  };
+}
+
 export function shuffleCards<T>(
   items: readonly T[],
   random: () => number = Math.random,
@@ -105,12 +159,13 @@ export function shuffleCards<T>(
 function createSearchUrl(
   query: string,
   order: ScryfallSortOrder = "name",
+  unique: ScryfallUniqueMode = "cards",
   page?: number,
 ): URL {
   const url = new URL("/cards/search", SCRYFALL_API_ORIGIN);
 
   url.searchParams.set("q", query);
-  url.searchParams.set("unique", "cards");
+  url.searchParams.set("unique", unique);
   url.searchParams.set("order", order);
 
   if (page !== undefined) {
@@ -159,7 +214,12 @@ export async function loadFeaturedCards(
     randomPageNumber === 1
       ? firstPage
       : await requestCardPage(
-          createSearchUrl(FEATURED_QUERY, "name", randomPageNumber),
+          createSearchUrl(
+            FEATURED_QUERY,
+            "name",
+            "cards",
+            randomPageNumber,
+          ),
         );
 
   return {
@@ -171,6 +231,7 @@ export async function loadFeaturedCards(
 export async function searchCards(
   query: string,
   order: ScryfallSortOrder = "name",
+  unique: ScryfallUniqueMode = "cards",
 ): Promise<CardSearchPage> {
   const trimmedQuery = query.trim();
 
@@ -178,7 +239,7 @@ export async function searchCards(
     return loadFeaturedCards();
   }
 
-  return requestCardPage(createSearchUrl(trimmedQuery, order));
+  return requestCardPage(createSearchUrl(trimmedQuery, order, unique));
 }
 
 export async function loadNextCardPage(

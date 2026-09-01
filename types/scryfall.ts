@@ -1,24 +1,31 @@
 export type ScryfallColor = "W" | "U" | "B" | "R" | "G";
 
-export type ScryfallLegality = 
-    | "legal"
-    | "not_legal"
-    | "restricted"
-    | "banned";
+export type ScryfallLegality =
+  | "legal"
+  | "not_legal"
+  | "restricted"
+  | "banned";
+
 export type ScryfallImageUris = {
-    small: string;
-    normal: string;
-    large: string;
-    png: string;
-    art_crop: string;
-    border_crop: string;
+  small: string;
+  normal: string;
+  large: string;
+  png: string;
+  art_crop: string;
+  border_crop: string;
 };
+
 export type ScryfallCardFace = {
-    name: string;
-    mana_cost?: string | null;
-    oracle_text?: string | null;
-    type_line?: string | null;
-    image_uris?: ScryfallImageUris | null;
+  name: string;
+  mana_cost?: string | null;
+  oracle_text?: string | null;
+  type_line?: string | null;
+  flavor_text?: string | null;
+  artist?: string | null;
+  power?: string | null;
+  toughness?: string | null;
+  loyalty?: string | null;
+  image_uris?: ScryfallImageUris | null;
 };
 
 export type ScryfallCard = {
@@ -35,9 +42,14 @@ export type ScryfallCard = {
   cmc: number;
   type_line: string;
   oracle_text?: string | null;
+  flavor_text?: string | null;
+  printed_name?: string | null;
+  printed_text?: string | null;
+  printed_type_line?: string | null;
 
   power?: string | null;
   toughness?: string | null;
+  loyalty?: string | null;
   keywords: string[];
 
   color_identity: ScryfallColor[];
@@ -56,7 +68,34 @@ export type ScryfallCard = {
   };
 
   artist?: string | null;
+  rarity: string;
+  lang: string;
+  layout: string;
+  set_type: string;
+  finishes: string[];
+  foil: boolean;
+  nonfoil: boolean;
+  promo: boolean;
+  purchase_uris?: {
+    tcgplayer?: string;
+    cardmarket?: string;
+    cardhoarder?: string;
+  };
   scryfall_uri: string;
+};
+
+export type ScryfallRuling = {
+  object: "ruling";
+  oracle_id: string;
+  source: string;
+  published_at: string;
+  comment: string;
+};
+
+export type ScryfallAutocomplete = {
+  object: "catalog";
+  total_values: number;
+  data: string[];
 };
 
 export type ScryfallList<T> = {

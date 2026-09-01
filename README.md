@@ -12,24 +12,34 @@ continuous integration.
 ## Features
 
 - A randomized 20-card homepage rail with keyboard and touch scrolling
-- A dedicated Explore page with shareable URL filters
-- Filters for card name or rules text, color, mana value, type, rarity, and format
+- Card-name autocomplete in the homepage and desktop navigation
+- A dedicated Explore page with shareable, validated URL filters
+- Filters for name, Oracle text, keyword, color relationship, mana value, type,
+  subtype, rarity, format, set, artist, price, and release window
 - Sorting by name, release date, mana value, rarity, color, price, or EDHREC rank
+- Gallery, detailed, and compact result views with card- or printing-level results
+- A readable explanation of every generated Scryfall search term
 - Paginated Scryfall results with loading, empty, warning, and error states
-- Reusable card tiles with direct add-to-deck controls
+- First-party card pages with Oracle and printed text, rulings, legalities, prices,
+  marketplace links, alternate printings, and double-faced card support
+- Reusable card results with direct add-to-deck controls
 - Multiple locally saved decks with rename, format, zone, and quantity management
 - Mana-curve, card-type, and color-identity analysis
 - Format and Commander color-identity validation
 - JSON and text import/export
 - Responsive dark interface with keyboard focus and reduced-motion support
 - Unit tests, coverage thresholds, type checking, linting, and GitHub Actions CI
+- PostgreSQL schema, repository contracts, and environment validation prepared
+  for a future account-backed persistence milestone
 
 ## Routes
 
 - `/` — focused homepage, global search entry, and randomized card rail
 - `/explore` — randomized grid, advanced filters, sorting, and search results
+- `/cards/[cardId]` — detailed card research, rulings, printings, and prices
 - `/decks` — saved deck dashboard
 - `/decks/[deckId]` — complete deck editor and analysis workspace
+- `/api/cards/autocomplete` — same-origin card-name suggestion endpoint
 
 ## Tech stack
 
@@ -68,11 +78,24 @@ checks run in continuous integration.
 - Card API response types live in `types/scryfall.ts`.
 - `lib/scryfall.ts` owns Scryfall requests, normalization, pagination, sorting,
   and randomized page selection.
+- `lib/scryfall-server.ts` owns cached server-side detail, ruling, printing, and
+  autocomplete requests.
 - `lib/card-filters.ts` validates URL parameters and translates interface
   filters into Scryfall search syntax.
 - Deck domain behavior is separated into operations, analysis, and serialization
   modules under `lib/`.
 - React context provides browser-local deck state to search and deck routes.
+- `lib/persistence/contracts.ts`, `database/schema.sql`, and
+  `docs/backend-readiness.md` define the safe path to server persistence and login.
+
+## Future backend configuration
+
+The deployed demo does not require a database or login. The included backend
+files establish an intentional upgrade path without shipping incomplete account
+features. See [`docs/backend-readiness.md`](./docs/backend-readiness.md) before
+setting any variables. Example names live in [`.env.example`](./.env.example);
+real values belong only in an ignored `.env.local` file or a deployment secret
+manager.
 
 ## Data and trademarks
 

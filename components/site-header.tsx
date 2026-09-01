@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { CardSearch } from "@/components/card-search";
 import { useDecks } from "@/components/deck-provider";
 
 export function SiteHeader() {
@@ -9,7 +10,7 @@ export function SiteHeader() {
   return (
     <header className="sticky top-0 z-50 border-b border-orange/15 bg-paper/90 backdrop-blur-xl">
       <nav
-        className="grid h-[76px] grid-cols-[1fr_auto] items-center px-6 md:grid-cols-[1fr_auto_1fr] lg:px-20"
+        className="flex h-[76px] items-center px-6 lg:px-20"
         aria-label="Primary navigation"
       >
         <Link
@@ -24,7 +25,11 @@ export function SiteHeader() {
           <span className="transition group-hover:text-orange">Spellbook</span>
         </Link>
 
-        <div className="hidden items-center gap-8 text-xs font-bold uppercase tracking-[0.12em] text-ink/70 md:flex">
+        <div className="mx-8 hidden min-w-0 max-w-sm flex-1 lg:block">
+          <CardSearch compact id="header-card-search" />
+        </div>
+
+        <div className="ml-auto hidden items-center gap-7 text-xs font-bold uppercase tracking-[0.12em] text-ink/70 md:flex lg:ml-0">
           <Link href="/" className="transition-colors hover:text-orange">
             Home
           </Link>
@@ -38,7 +43,7 @@ export function SiteHeader() {
           </Link>
         </div>
 
-        <div className="flex items-center gap-2 justify-self-end">
+        <div className="ml-auto flex items-center gap-2 lg:ml-7">
           <Link
             href="/explore"
             className="rounded-full border border-ink/15 px-3 py-2 text-xs font-bold transition-colors hover:border-orange hover:text-orange md:hidden"

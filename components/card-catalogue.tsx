@@ -1,15 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { CardTile } from "@/components/card-tile";
-import { AddToDeckControl } from "@/components/decks/add-to-deck-control";
+import { CardResultViews } from "@/components/card-result-views";
 
 import {
   ScryfallApiError,
   loadNextCardPage,
   searchCards,
 } from "@/lib/scryfall";
-import type { ScryfallSortOrder } from "@/lib/scryfall";
+import type {
+  ScryfallSortOrder,
+  ScryfallUniqueMode,
+} from "@/lib/scryfall";
+import type { ResultView } from "@/lib/card-filters";
 import type { Card } from "@/types/card";
 
 const CARD_BATCH_SIZE = 12;
@@ -17,11 +20,15 @@ const CARD_BATCH_SIZE = 12;
 type CardCatalogueProps = {
   query: string;
   sortOrder?: ScryfallSortOrder;
+  unique?: ScryfallUniqueMode;
+  view?: ResultView;
 };
 
 export default function CardCatalogue({
   query,
   sortOrder = "name",
+  unique = "cards",
+  view = "grid",
 }: CardCatalogueProps) {
   const isFeaturedSelection = query.trim().length === 0;
   const [cards, setCards] = useState<Card[]>([]);
@@ -46,7 +53,7 @@ export default function CardCatalogue({
       setLoadMoreError(null);
 
       try {
-        const page = await searchCards(query, sortOrder);
+        const page = await searchCards(query, sortOrder, unique);
 
         if (ignore) {
           return;
@@ -95,7 +102,7 @@ export default function CardCatalogue({
     return () => {
       ignore = true;
     };
-  }, [query, requestNumber, sortOrder]);
+  }, [query, requestNumber, sortOrder, unique]);
 
   const visibleCards = cards.slice(0, visibleCount);
   const hasHiddenCards = visibleCount < cards.length;
@@ -242,19 +249,7 @@ export default function CardCatalogue({
         </aside>
       )}
 
-      <div
-        id="card-results"
-        className="mt-9 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3"
-      >
-        {visibleCards.map((card, index) => (
-          <CardTile
-            key={card.id}
-            card={card}
-            eager={index === 0}
-            actions={<AddToDeckControl card={card} />}
-          />
-        ))}
-      </div>
+      <CardResultViews cards={visibleCards} view={view} />
 
       <div
         className="mt-12 flex flex-col items-center gap-3"

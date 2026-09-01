@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
 import { ScryfallApiError, loadFeaturedCards } from "@/lib/scryfall";
@@ -121,7 +122,7 @@ export function FeaturedCardRail() {
           <button
             type="button"
             onClick={() => scrollRail(-1)}
-            className="grid h-10 w-10 place-items-center border border-ink/15 bg-paper/50 text-lg transition hover:border-orange hover:text-orange"
+            className="grid h-11 w-11 place-items-center border border-ink/15 bg-paper/50 text-lg transition hover:border-orange hover:text-orange"
             aria-label="Scroll featured cards left"
           >
             ←
@@ -129,7 +130,7 @@ export function FeaturedCardRail() {
           <button
             type="button"
             onClick={() => scrollRail(1)}
-            className="grid h-10 w-10 place-items-center border border-ink/15 bg-paper/50 text-lg transition hover:border-orange hover:text-orange"
+            className="grid h-11 w-11 place-items-center border border-ink/15 bg-paper/50 text-lg transition hover:border-orange hover:text-orange"
             aria-label="Scroll featured cards right"
           >
             →
@@ -156,12 +157,10 @@ export function FeaturedCardRail() {
             className="w-[210px] shrink-0 snap-start sm:w-[236px]"
           >
             <article className="group h-full border border-ink/10 bg-paper/55 p-3 transition hover:border-orange/35 hover:bg-paper/80">
-              <a
-                href={card.scryfallUrl}
-                target="_blank"
-                rel="noreferrer"
+              <Link
+                href={`/cards/${card.id}`}
                 className="block"
-                aria-label={`View ${card.name} on Scryfall`}
+                aria-label={`View details for ${card.name}`}
               >
                 <div className="overflow-hidden rounded-2xl bg-night shadow-[0_14px_35px_rgb(0_0_0_/_0.35)]">
                   {card.imageUrl ? (
@@ -200,7 +199,7 @@ export function FeaturedCardRail() {
                     {card.setName}
                   </p>
                 </div>
-              </a>
+              </Link>
             </article>
           </li>
         ))}

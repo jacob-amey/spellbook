@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import type { ReactNode } from "react";
 
 import type { Card } from "@/types/card";
@@ -16,12 +17,10 @@ export function CardTile({
 }: CardTileProps) {
   return (
     <article className="group flex h-full flex-col border border-ink/10 bg-paper/55 p-3 shadow-[0_18px_60px_rgb(0_0_0_/_0.18)] transition duration-300 hover:border-orange/30 hover:bg-paper/80">
-      <a
-        href={card.scryfallUrl}
-        target="_blank"
-        rel="noreferrer"
+      <Link
+        href={`/cards/${card.id}`}
         className="block"
-        aria-label={`View ${card.name} on Scryfall`}
+        aria-label={`View details for ${card.name}`}
       >
         <div className="overflow-hidden rounded-2xl bg-night shadow-[0_14px_35px_rgb(0_0_0_/_0.35)] transition duration-300 group-hover:-translate-y-1">
           {card.imageUrl ? (
@@ -41,19 +40,17 @@ export function CardTile({
             </div>
           )}
         </div>
-      </a>
+      </Link>
 
       <div className="mt-4 flex grow flex-col">
         <div className="flex items-start justify-between gap-4">
           <h3 className="font-serif text-xl font-semibold">
-            <a
-              href={card.scryfallUrl}
-              target="_blank"
-              rel="noreferrer"
+            <Link
+              href={`/cards/${card.id}`}
               className="transition hover:text-orange"
             >
               {card.name}
-            </a>
+            </Link>
           </h3>
 
           {card.manaCost && (
