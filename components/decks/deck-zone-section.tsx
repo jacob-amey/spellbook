@@ -35,14 +35,14 @@ export function DeckZoneSection({
 
   return (
     <section
-      className="border border-ink/15 bg-paper p-5 sm:p-6"
+      className="rounded-xl border border-ink/15 bg-paper p-5 sm:p-6"
       aria-labelledby={headingId}
     >
       <div className="flex items-start justify-between gap-4 border-b border-ink/10 pb-4">
         <div>
           <h2
             id={headingId}
-            className="font-display text-3xl"
+            className="text-xl font-semibold tracking-tight"
           >
             {formatDeckZone(zone)}
           </h2>

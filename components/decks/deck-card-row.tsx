@@ -97,6 +97,7 @@ export function DeckCardRow({
     <li className="grid gap-4 border-b border-ink/10 py-4 last:border-b-0 sm:grid-cols-[64px_1fr_auto] sm:items-center">
       <Link
         href={`/cards/${card.id}`}
+        prefetch={false}
         className="hidden overflow-hidden rounded sm:block"
         aria-label={`View details for ${card.name}`}
       >
@@ -120,7 +121,8 @@ export function DeckCardRow({
       <div className="min-w-0">
         <Link
           href={`/cards/${card.id}`}
-          className="font-display text-xl font-bold transition hover:text-orange"
+          prefetch={false}
+          className="text-sm font-semibold transition hover:text-moss"
         >
           {card.name}
         </Link>
@@ -177,7 +179,7 @@ export function DeckCardRow({
           <select
             value={zone}
             onChange={handleZoneChange}
-            className="h-10 border border-ink/20 bg-paper px-3 text-sm outline-none focus:border-orange focus:ring-2 focus:ring-orange/20"
+            className="min-h-11 rounded-md border border-ink/20 bg-paper px-3 text-sm focus:border-moss"
           >
             {DECK_ZONES.map((candidateZone) => (
               <option

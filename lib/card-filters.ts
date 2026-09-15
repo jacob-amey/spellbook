@@ -164,7 +164,7 @@ function normalizeNumber(value: string, maximum = 1_000_000): string {
 }
 
 function normalizeDate(value: string): string {
-  return /^\d{4}-\d{2}-\d{2}$/.test(value) && !Number.isNaN(Date.parse(value))
+  return /^\d{4}-\d{2}-\d{2}$/.test(value) && !Number.isNaN(Date.parse(value)) && new Date(value).toISOString().slice(0, 10) === value
     ? value
     : "";
 }
@@ -251,7 +251,7 @@ export function parseExploreFilters(
 
 function getColorQuery(filters: ExploreFilters): string {
   if (filters.colorless) {
-    return "c=c";
+    return filters.colorMode === "identity" ? "id=c" : "c=c";
   }
 
   if (filters.colors.length === 0) {
@@ -306,9 +306,10 @@ export function buildScryfallQuery(filters: ExploreFilters): string {
     filters.releasedBefore ? `date<=${filters.releasedBefore}` : "",
   ].filter(Boolean);
 
-  const parts = [filters.query, ...filterQueries].filter(Boolean);
+  // Group user syntax so an OR cannot bypass the selected filters or paper scope.
+  const parts = [filters.query ? `(${filters.query})` : "", ...filterQueries].filter(Boolean);
 
-  if (parts.length === 0 && filters.sort === "name") {
+  if (parts.length === 0 && filters.sort === "name" && filters.unique === "cards") {
     return "";
   }
 
@@ -317,7 +318,7 @@ export function buildScryfallQuery(filters: ExploreFilters): string {
 
 export function getActiveFilterLabels(filters: ExploreFilters): string[] {
   const colorLabel = filters.colorless
-    ? "Colorless only"
+    ? filters.colorMode === "identity" ? "Colorless Commander identity" : "Colorless only"
     : filters.colors.length > 0
       ? `${
           COLOR_MATCH_OPTIONS.find(
@@ -383,7 +384,9 @@ export function getQueryExplanations(
       token: colorQuery,
       label: "Color relationship",
       description:
-        filters.colorMode === "identity"
+        filters.colorless
+          ? filters.colorMode === "identity" ? "Only cards with a colorless Commander identity." : "Only cards with no colors; their Commander identity may still include colors."
+          : filters.colorMode === "identity"
           ? "Only cards whose Commander color identity fits within the selected colors."
           : filters.colorMode === "exact"
             ? "Only cards with exactly the selected colors."

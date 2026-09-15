@@ -1,6 +1,8 @@
 import type { Card } from "@/types/card";
 import type { ScryfallColor } from "@/types/scryfall";
 
+export const MAX_DECK_ENTRIES = 1_000;
+
 export const DECK_FORMATS = [
   "commander",
   "standard",

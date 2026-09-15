@@ -50,54 +50,57 @@ export function DeckStatistics({
 
   return (
     <section
-      className="border border-ink/15 bg-paper p-5"
+      className="rounded-xl border border-ink/15 bg-paper p-5 tabular-nums"
       aria-labelledby="deck-statistics-heading"
     >
       <h2
         id="deck-statistics-heading"
-        className="font-display text-2xl"
+        className="text-xl font-semibold"
       >
         Deck statistics
       </h2>
 
       <dl className="mt-5 grid grid-cols-3 gap-3 text-center">
         <div className="bg-parchment px-2 py-3">
-          <dt className="text-xs text-ink/55">Playable</dt>
-          <dd className="mt-1 font-display text-2xl">
+          <dt className="text-xs text-ink/70">Deck size</dt>
+          <dd className="mt-1 text-2xl font-semibold">
             {analysis.totals.playable}
           </dd>
         </div>
 
         <div className="bg-parchment px-2 py-3">
-          <dt className="text-xs text-ink/55">Unique</dt>
-          <dd className="mt-1 font-display text-2xl">
+          <dt className="text-xs text-ink/70">Unique</dt>
+          <dd className="mt-1 text-2xl font-semibold">
             {analysis.totals.unique}
           </dd>
         </div>
 
         <div className="bg-parchment px-2 py-3">
-          <dt className="text-xs text-ink/55">Average MV</dt>
-          <dd className="mt-1 font-display text-2xl">
+          <dt className="text-xs text-ink/70">Average MV</dt>
+          <dd className="mt-1 text-2xl font-semibold">
             {analysis.averageManaValue.toFixed(1)}
           </dd>
         </div>
       </dl>
 
       <div className="mt-6">
-        <h3 className="text-xs font-extrabold uppercase tracking-[0.14em] text-ink/55">
+        <h3 className="text-sm font-medium text-ink/70">
           Mana curve
         </h3>
 
-        <ol className="mt-3 grid h-32 grid-cols-8 items-end gap-1">
+        <p className="mt-2 text-xs leading-5 text-ink/65">Nonland cards · sideboard excluded</p>
+        <ol aria-label="Nonland mana curve" className="mt-3 grid h-36 grid-cols-8 items-end gap-1">
           {analysis.manaCurve.map((bucket) => (
             <li
               key={bucket.label}
-              className="grid h-full grid-rows-[1fr_auto] items-end gap-1 text-center"
+              className="grid h-full grid-rows-[auto_1fr_auto] items-end gap-1 text-center"
               aria-label={`${bucket.label} mana value: ${bucket.count} cards`}
+              title={`${bucket.label} mana value: ${bucket.count} cards`}
             >
+              <span className="text-xs font-semibold text-ink/80" aria-hidden="true">{bucket.count}</span>
               <div className="flex h-full items-end bg-parchment">
                 <span
-                  className="block w-full bg-forest transition-[height]"
+                  className="block w-full bg-moss/70 transition-[height]"
                   style={{
                     height: `${
                       (bucket.count / largestCurveCount) * 100
@@ -117,7 +120,7 @@ export function DeckStatistics({
       </div>
 
       <div className="mt-6">
-        <h3 className="text-xs font-extrabold uppercase tracking-[0.14em] text-ink/55">
+        <h3 className="text-sm font-medium text-ink/70">
           Card types
         </h3>
 
@@ -141,7 +144,7 @@ export function DeckStatistics({
       </div>
 
       <div className="mt-6">
-        <h3 className="text-xs font-extrabold uppercase tracking-[0.14em] text-ink/55">
+        <h3 className="text-sm font-medium text-ink/70">
           Color identity
         </h3>
 
@@ -163,6 +166,16 @@ export function DeckStatistics({
           </ul>
         )}
       </div>
+
+      <details className="mt-6 border-t border-ink/15 pt-4 text-xs leading-5 text-ink/70">
+        <summary className="cursor-pointer font-semibold text-ink">How statistics are calculated</summary>
+        <ul className="mt-3 list-disc space-y-2 pl-4">
+          <li>Deck size, card types, and color counts include the mainboard and commanders, not the sideboard.</li>
+          <li>Unique counts distinct cards across all sections, regardless of printing.</li>
+          <li>Average mana value and the curve exclude lands and weight each card by its quantity.</li>
+          <li>Multicolor cards count once in each of their colors. The color totals can exceed the deck size.</li>
+        </ul>
+      </details>
     </section>
   );
 }

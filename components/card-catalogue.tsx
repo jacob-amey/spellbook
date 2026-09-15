@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CardResultViews } from "@/components/card-result-views";
 
 import {
@@ -43,6 +43,7 @@ export default function CardCatalogue({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [loadMoreError, setLoadMoreError] = useState<string | null>(null);
   const [requestNumber, setRequestNumber] = useState(0);
+  const loadMoreController = useRef<AbortController | null>(null);
 
   useEffect(() => {
     let ignore = false;
@@ -50,6 +51,7 @@ export default function CardCatalogue({
 
     async function loadCards() {
       setIsLoading(true);
+      setIsLoadingMore(false);
       setErrorMessage(null);
       setLoadMoreError(null);
 
@@ -108,6 +110,7 @@ export default function CardCatalogue({
     return () => {
       ignore = true;
       controller.abort();
+      loadMoreController.current?.abort();
     };
   }, [query, requestNumber, sortOrder, unique]);
 
@@ -131,9 +134,12 @@ export default function CardCatalogue({
     }
 
     setIsLoadingMore(true);
+    const controller = new AbortController();
+    loadMoreController.current = controller;
 
     try {
-      const page = await loadNextCardPage(nextPage);
+      const page = await loadNextCardPage(nextPage, controller.signal);
+      if (controller.signal.aborted) return;
 
       setCards((currentCards) => [...currentCards, ...page.cards]);
 
@@ -149,13 +155,14 @@ export default function CardCatalogue({
         Array.from(new Set([...currentWarnings, ...page.warnings])),
       );
     } catch (error) {
+      if (controller.signal.aborted) return;
       setLoadMoreError(
         error instanceof Error
           ? error.message
           : "More cards could not be loaded.",
       );
     } finally {
-      setIsLoadingMore(false);
+      if (!controller.signal.aborted) setIsLoadingMore(false);
     }
   }
 
@@ -182,7 +189,7 @@ export default function CardCatalogue({
   if (errorMessage) {
     return (
       <div className="mt-9 border border-orange/30 bg-paper p-6" role="alert">
-        <h3 className="font-display text-2xl">The archive is unavailable</h3>
+        <h3 className="text-2xl font-semibold">Card search is unavailable</h3>
 
         <p className="mt-2 max-w-xl text-sm leading-6 text-ink/65">
           {errorMessage}
@@ -202,7 +209,7 @@ export default function CardCatalogue({
   if (cards.length === 0) {
     return (
       <div className="mt-9 border border-ink/10 bg-paper p-6" role="status">
-        <h3 className="font-display text-2xl">No cards found</h3>
+        <h3 className="text-xl font-semibold">No cards found</h3>
 
         <p className="mt-2 text-sm text-ink/65">
           {query
@@ -219,8 +226,7 @@ export default function CardCatalogue({
         <p className="text-sm text-ink/60" aria-live="polite">
           {isFeaturedSelection ? (
             <>
-              Showing {visibleCards.length} randomly drawn cards from the
-              paper archive
+              Showing {visibleCards.length} sampled cards from the paper catalogue
             </>
           ) : (
             <>
@@ -234,9 +240,9 @@ export default function CardCatalogue({
           <button
             type="button"
             onClick={() => setRequestNumber((number) => number + 1)}
-            className="shrink-0 border border-orange/45 bg-orange/10 px-4 py-2 text-xs font-extrabold uppercase tracking-[0.12em] text-orange transition hover:bg-orange hover:text-night"
+            className="min-h-11 shrink-0 rounded-md border border-ink/20 bg-parchment px-4 py-2 text-xs font-medium text-ink/80 transition hover:border-moss hover:text-moss"
           >
-            Draw another selection
+            Load another sample
           </button>
         )}
       </div>
@@ -246,7 +252,7 @@ export default function CardCatalogue({
           className="mt-6 border border-orange/30 bg-paper p-5"
           aria-label="Search warnings"
         >
-          <h3 className="font-display text-xl">Search notes</h3>
+          <h3 className="text-base font-semibold">Search notes</h3>
 
           <ul className="mt-2 list-disc space-y-1 pl-5 text-sm leading-6 text-ink/65">
             {warnings.map((warning) => (

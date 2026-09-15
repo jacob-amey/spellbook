@@ -5,10 +5,10 @@ import { useEffect } from "react";
 
 export default function CardError({
   error,
-  reset,
+  retry,
 }: {
   error: Error & { digest?: string };
-  reset: () => void;
+  retry: () => void;
 }) {
   useEffect(() => {
     console.error(error);
@@ -20,14 +20,14 @@ export default function CardError({
         <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-orange">
           ARCHIVE CONNECTION
         </p>
-        <h1 className="mt-3 font-display text-4xl">Card details are temporarily unavailable.</h1>
+        <h1 className="mt-3 text-3xl font-semibold tracking-tight">Card details are temporarily unavailable.</h1>
         <p className="mt-4 text-sm leading-7 text-ink/70">
           Spellbook could not reach the card archive. Your saved decks are unaffected.
         </p>
         <div className="mt-7 flex flex-wrap justify-center gap-3">
           <button
             type="button"
-            onClick={reset}
+            onClick={retry}
             className="min-h-11 bg-orange px-5 py-3 font-bold text-night"
           >
             Try again

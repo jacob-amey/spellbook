@@ -35,7 +35,7 @@ export function CardFaceViewer({
 
   return (
     <div>
-      <div className="overflow-hidden rounded-[4.8%] bg-night shadow-[0_28px_90px_rgb(0_0_0_/_0.48)]">
+      <div className="overflow-hidden rounded-[4.8%] bg-night shadow-lg">
         {selectedFace.imageUrl ? (
           <Image
             src={selectedFace.imageUrl}
@@ -65,7 +65,7 @@ export function CardFaceViewer({
               type="button"
               onClick={() => setSelectedIndex(index)}
               aria-pressed={selectedIndex === index}
-              className="min-h-11 border border-ink/20 bg-paper/70 px-4 py-2 text-sm font-bold transition hover:border-orange aria-pressed:border-orange aria-pressed:bg-orange aria-pressed:text-night"
+              className="min-h-11 border border-ink/20 bg-paper/70 px-4 py-2 text-sm font-bold transition hover:border-moss aria-pressed:border-moss aria-pressed:bg-moss aria-pressed:text-night"
             >
               {face.name}
             </button>

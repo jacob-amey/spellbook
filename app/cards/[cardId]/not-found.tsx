@@ -7,7 +7,7 @@ export default function CardNotFound() {
         <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-orange">
           MISSING FROM THE ARCHIVE
         </p>
-        <h1 className="mt-3 font-display text-4xl">That card could not be found.</h1>
+        <h1 className="mt-3 text-3xl font-semibold tracking-tight">That card could not be found.</h1>
         <p className="mt-4 text-sm leading-7 text-ink/70">
           The link may be outdated, or the printing may no longer be available from the card data provider.
         </p>
@@ -15,7 +15,7 @@ export default function CardNotFound() {
           href="/explore"
           className="mt-7 inline-flex min-h-11 items-center bg-orange px-5 py-3 font-bold text-night"
         >
-          Search the archive
+          Search cards
         </Link>
       </div>
     </main>

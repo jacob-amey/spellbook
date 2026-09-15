@@ -96,6 +96,6 @@ export type CardRuling = {
 
 export type CardDetailsBundle = {
   card: CardDetails;
-  printings: CardDetails[];
-  rulings: CardRuling[];
+  printings: { cards: CardDetails[]; totalCards: number } | null;
+  rulings: CardRuling[] | null;
 };

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { FormEvent } from "react";
 
@@ -11,6 +12,7 @@ import {
   isDeckFormat,
 } from "@/lib/deck-operations";
 import { DECK_FORMATS } from "@/types/deck";
+import { createSampleDeck } from "@/lib/sample-deck";
 
 type Feedback = {
   kind: "success" | "error";
@@ -35,10 +37,13 @@ function formatUpdatedDate(value: string): string {
 }
 
 export function DeckDashboard() {
+  const router = useRouter();
   const {
     decks,
+    storageError,
     isReady,
     createDeck,
+    importDeck,
     deleteDeck,
   } = useDecks();
 
@@ -51,6 +56,15 @@ export function DeckDashboard() {
   const sortedDecks = [...decks].sort((first, second) =>
     second.updatedAt.localeCompare(first.updatedAt),
   );
+
+  function handleSampleDeck() {
+    const deckId = importDeck(createSampleDeck());
+    if (deckId) {
+      router.push(`/decks/${deckId}`);
+    } else {
+      setFeedback({ kind: "error", message: "The sample deck could not be saved. Check the storage notice and try again." });
+    }
+  }
 
   function handleCreateDeck(
     event: FormEvent<HTMLFormElement>,
@@ -108,6 +122,7 @@ export function DeckDashboard() {
       kind: "success",
       message: `Created “${trimmedName}”.`,
     });
+    router.push(`/decks/${deckId}`);
   }
 
   function handleDeleteDeck(
@@ -134,9 +149,9 @@ export function DeckDashboard() {
   }
 
   return (
-    <section className="mt-10 border border-orange/15 bg-parchment/90 p-6 shadow-[0_24px_80px_rgb(0_0_0_/_0.2)] sm:p-8">
+    <section className="mt-10 border border-ink/10 bg-parchment/90 p-6 rounded-xl shadow-sm sm:p-8">
       <div className="flex flex-col justify-between gap-4 border-b border-ink/15 pb-5 sm:flex-row sm:items-start">
-        <h2 className="font-display text-3xl">
+        <h2 className="text-xl font-semibold tracking-tight">
           Your decks
         </h2>
 
@@ -174,7 +189,7 @@ export function DeckDashboard() {
               maxLength={60}
               autoComplete="off"
               placeholder="Izzet Spells"
-              className="mt-2 w-full border border-ink/20 bg-paper px-4 py-3 text-sm outline-none transition focus:border-orange focus:ring-2 focus:ring-orange/20"
+              className="mt-2 w-full border border-ink/20 bg-paper px-4 py-3 text-sm transition focus:border-moss focus:ring-2 focus:ring-moss/20"
             />
           </div>
 
@@ -190,7 +205,7 @@ export function DeckDashboard() {
               id="deck-format"
               name="format"
               defaultValue="commander"
-              className="mt-2 w-full border border-ink/20 bg-paper px-4 py-3 text-sm outline-none transition focus:border-orange focus:ring-2 focus:ring-orange/20"
+              className="mt-2 w-full border border-ink/20 bg-paper px-4 py-3 text-sm transition focus:border-moss focus:ring-2 focus:ring-moss/20"
             >
               {DECK_FORMATS.map((format) => (
                 <option key={format} value={format}>
@@ -237,20 +252,30 @@ export function DeckDashboard() {
       ) : sortedDecks.length === 0 ? (
         <div className="py-16 text-center">
           <span
-            className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-forest font-display text-xl text-cream"
+            className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-forest text-base font-semibold text-cream"
             aria-hidden="true"
           >
             +
           </span>
 
-          <h3 className="mt-5 font-display text-2xl">
-            No decks yet
+          <h3 className="mt-5 text-lg font-semibold tracking-tight">
+            {storageError ? "Saved decks are unavailable" : "No decks yet"}
           </h3>
 
           <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-ink/60">
-            Use the form above to create your first deck.
-            It will be saved automatically in this browser.
+            {storageError ? "See the storage notice above before making changes." : "Use the form above to create your first deck. It will be saved automatically in this browser."}
           </p>
+          {!storageError && (
+            <div className="mt-6">
+              <button type="button" onClick={handleSampleDeck} className="min-h-11 border border-orange/40 bg-orange/10 px-5 py-3 text-sm font-bold text-orange transition hover:bg-orange hover:text-night">
+                Try a sample deck
+              </button>
+              <p className="mx-auto mt-3 max-w-md text-xs leading-5 text-ink/65">
+                Open a casual red-blue starter with creatures, spells, and lands.
+                Edit your own copy and explore its mana curve. No account needed.
+              </p>
+            </div>
+          )}
         </div>
       ) : (
         <ul className="mt-7 divide-y divide-ink/10 border-t border-ink/10">
@@ -265,10 +290,10 @@ export function DeckDashboard() {
                 className="flex flex-col gap-4 py-5 sm:flex-row sm:items-center sm:justify-between"
               >
                 <div>
-                  <h3 className="font-display text-2xl">
+                  <h3 className="text-lg font-semibold tracking-tight">
                     <Link
                       href={`/decks/${deck.id}`}
-                      className="transition hover:text-orange"
+                      className="transition hover:text-moss"
                     >
                       {deck.name}
                     </Link>

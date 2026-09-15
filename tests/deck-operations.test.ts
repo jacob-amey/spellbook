@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { MAX_DECK_ENTRIES } from "@/types/deck";
 
 import {
   MAX_CARD_QUANTITY,
@@ -68,6 +69,13 @@ describe("deck metadata operations", () => {
 });
 
 describe("card quantity and zone operations", () => {
+  it("does not create a deck too large to reload or import", () => {
+    const deck = createDeck({ cards: Array.from({ length: MAX_DECK_ENTRIES }, (_, index) =>
+      createEntry(createCard({ oracleId: `card-${index}` })),
+    ) });
+    expect(addCardToDeckRecord(deck, createCard())).toBe(deck);
+    expect(addCardToDeckRecord(deck, deck.cards[0].card).cards[0].quantity).toBe(2);
+  });
   it("adds a card without mutating the source deck", () => {
     const deck = createDeck();
     const card = createCard();

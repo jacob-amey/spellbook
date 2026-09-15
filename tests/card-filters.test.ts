@@ -8,6 +8,22 @@ import {
 } from "@/lib/card-filters";
 
 describe("Explore card filters", () => {
+  it("keeps OR expressions inside all selected constraints", () => {
+    const filters = parseExploreFilters({ q: "t:instant OR t:sorcery", color: "U" });
+    expect(buildScryfallQuery(filters)).toBe("(t:instant OR t:sorcery) c>=U game:paper");
+  });
+
+  it("honors printing-only searches and colorless Commander identity", () => {
+    expect(buildScryfallQuery(parseExploreFilters({ unique: "prints" }))).toBe("game:paper");
+    const filters = parseExploreFilters({ colorless: "true", colorMode: "identity" });
+    expect(buildScryfallQuery(filters)).toBe("id=c game:paper");
+    expect(getQueryExplanations(filters)[0].description).toContain("colorless Commander identity");
+  });
+
+  it("rejects impossible dates while preserving leap days", () => {
+    expect(parseExploreFilters({ releasedAfter: "2025-02-29" }).releasedAfter).toBe("");
+    expect(parseExploreFilters({ releasedAfter: "2024-02-29" }).releasedAfter).toBe("2024-02-29");
+  });
   it("returns a random draw when no search choices are active", () => {
     const filters = parseExploreFilters({});
 
@@ -33,7 +49,7 @@ describe("Explore card filters", () => {
     });
 
     expect(buildScryfallQuery(filters)).toBe(
-      "angel id<=WU mv>=3 mv<=6 t:creature r:rare f:commander game:paper",
+      "(angel) id<=WU mv>=3 mv<=6 t:creature r:rare f:commander game:paper",
     );
     expect(getActiveFilterLabels(filters)).toEqual([
       "Search: “angel”",

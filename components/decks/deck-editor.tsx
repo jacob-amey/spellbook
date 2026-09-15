@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type {
   ChangeEvent,
   FormEvent,
@@ -36,6 +36,7 @@ export function DeckEditor({ deckId }: DeckEditorProps) {
   const router = useRouter();
   const {
     decks,
+    storageError,
     deleteDeck,
     isReady,
     renameDeck,
@@ -45,6 +46,15 @@ export function DeckEditor({ deckId }: DeckEditorProps) {
     useState<Feedback | null>(null);
   const [isConfirmingDelete, setIsConfirmingDelete] =
     useState(false);
+  const cancelDeleteRef = useRef<HTMLButtonElement>(null);
+  const deleteButtonRef = useRef<HTMLButtonElement>(null);
+  const wasConfirmingDelete = useRef(false);
+
+  useEffect(() => {
+    if (isConfirmingDelete) cancelDeleteRef.current?.focus();
+    else if (wasConfirmingDelete.current) deleteButtonRef.current?.focus();
+    wasConfirmingDelete.current = isConfirmingDelete;
+  }, [isConfirmingDelete]);
 
   const deck = decks.find(
     (candidate) => candidate.id === deckId,
@@ -159,7 +169,7 @@ export function DeckEditor({ deckId }: DeckEditorProps) {
           <p className="text-5xl" aria-hidden="true">
             ◇
           </p>
-          <h1 className="mt-5 font-display text-5xl">
+          <h1 className="mt-5 text-3xl font-semibold tracking-tight">
             Deck not found
           </h1>
           <p className="mt-4 leading-7 text-ink/60">
@@ -185,21 +195,22 @@ export function DeckEditor({ deckId }: DeckEditorProps) {
   return (
     <main
       id="main-content"
-      className="min-h-[calc(100vh-76px)] bg-parchment px-6 py-12 text-ink lg:px-[5vw] lg:py-16"
+      className="py-8 text-ink sm:py-10"
     >
-      <div className="mx-auto max-w-7xl">
+      <div className="site-container">
         <Link
           href="/decks"
-          className="text-sm font-bold text-orange transition hover:text-ink"
+          className="inline-flex min-h-11 items-center text-sm font-medium text-moss transition hover:text-ink"
         >
           ← All decks
         </Link>
 
-        <header className="mt-7 border border-ink/15 bg-paper p-6 sm:p-8">
+        <header className="mt-4 rounded-xl border border-ink/15 bg-parchment/45 p-5 sm:p-7">
+          <h1 className="sr-only">{deck.name}</h1>
           <div className="grid gap-7 lg:grid-cols-[1fr_auto] lg:items-start">
-            <div>
-              <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-ink/50">
-                Deck workspace · Autosaved locally
+            <div className="min-w-0">
+              <p className="text-xs font-medium text-ink/60">
+                Deck workspace · {storageError ? "Saving needs attention" : "Saved in this browser"}
               </p>
 
               <form
@@ -207,7 +218,7 @@ export function DeckEditor({ deckId }: DeckEditorProps) {
                 onSubmit={handleRename}
                 className="mt-3 flex max-w-2xl flex-col gap-3 sm:flex-row"
               >
-                <label className="grow">
+                <label className="min-w-0 grow">
                   <span className="sr-only">Deck name</span>
                   <input
                     name="name"
@@ -215,13 +226,13 @@ export function DeckEditor({ deckId }: DeckEditorProps) {
                     required
                     maxLength={60}
                     defaultValue={deck.name}
-                    className="w-full border-b-2 border-ink/20 bg-transparent py-2 font-display text-4xl font-bold outline-none transition focus:border-orange sm:text-5xl"
+                    className="w-full border-b-2 border-ink/20 bg-transparent py-2 text-2xl font-semibold transition focus:border-moss sm:text-3xl"
                   />
                 </label>
 
                 <button
                   type="submit"
-                  className="self-start border border-ink/20 px-4 py-2 text-sm font-bold transition hover:border-orange hover:text-orange sm:self-end"
+                  className="min-h-11 self-start rounded-md border border-ink/20 px-4 py-2 text-sm font-medium transition hover:border-moss hover:text-moss sm:self-end"
                 >
                   Save name
                 </button>
@@ -233,7 +244,7 @@ export function DeckEditor({ deckId }: DeckEditorProps) {
                   <select
                     value={deck.format}
                     onChange={handleFormatChange}
-                    className="border border-ink/20 bg-paper px-3 py-2 font-normal outline-none focus:border-orange focus:ring-2 focus:ring-orange/20"
+                    className="min-h-11 rounded-md border border-ink/20 bg-paper px-3 py-2 font-normal focus:border-moss"
                   >
                     {DECK_FORMATS.map((format) => (
                       <option key={format} value={format}>
@@ -254,21 +265,22 @@ export function DeckEditor({ deckId }: DeckEditorProps) {
               <DeckExportControls deck={deck} />
 
               {isConfirmingDelete ? (
-                <div className="flex flex-wrap items-center gap-2">
+                <div role="group" aria-label="Confirm deck deletion" onKeyDown={(event) => { if (event.key === "Escape") setIsConfirmingDelete(false); }} className="flex flex-wrap items-center gap-2">
                   <span className="text-xs font-bold text-orange">
                     Permanently delete this deck?
                   </span>
                   <button
                     type="button"
                     onClick={() => setIsConfirmingDelete(false)}
-                    className="border border-ink/20 px-3 py-2 text-xs font-bold"
+                    ref={cancelDeleteRef}
+                    className="min-h-11 rounded-md border border-ink/20 px-3 py-2 text-xs font-semibold"
                   >
                     Cancel
                   </button>
                   <button
                     type="button"
                     onClick={handleDeleteDeck}
-                    className="bg-orange px-3 py-2 text-xs font-bold text-night"
+                    className="min-h-11 rounded-md bg-orange px-3 py-2 text-xs font-semibold text-night"
                   >
                     Confirm delete
                   </button>
@@ -277,7 +289,8 @@ export function DeckEditor({ deckId }: DeckEditorProps) {
                 <button
                   type="button"
                   onClick={() => setIsConfirmingDelete(true)}
-                  className="text-sm font-bold text-orange transition hover:text-ink"
+                  ref={deleteButtonRef}
+                  className="min-h-11 text-sm font-medium text-orange transition hover:text-ink"
                 >
                   Delete deck
                 </button>
@@ -303,12 +316,12 @@ export function DeckEditor({ deckId }: DeckEditorProps) {
 
         <div className="mt-8 grid gap-8 xl:grid-cols-[minmax(0,1fr)_360px]">
           <div className="space-y-6">
-            <div className="flex flex-wrap items-center justify-between gap-4 border border-orange/20 bg-forest p-5 text-cream">
+            <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-ink/15 bg-parchment/45 p-5 text-ink">
               <div>
-                <h2 className="font-display text-2xl">
-                  Add cards from the archive
+                <h2 className="text-lg font-semibold tracking-tight">
+                  Add cards to this deck
                 </h2>
-                <p className="mt-1 text-sm text-cream/70">
+                <p className="mt-1 text-sm text-ink/65">
                   Search for any card, then choose this deck from the
                   result tile.
                 </p>
@@ -316,7 +329,7 @@ export function DeckEditor({ deckId }: DeckEditorProps) {
 
               <Link
                 href="/explore"
-                className="bg-orange px-5 py-3 text-sm font-bold text-night transition hover:brightness-110"
+                className="inline-flex min-h-11 items-center rounded-md bg-moss px-5 py-3 text-sm font-semibold text-night transition hover:bg-moss/85"
               >
                 Search cards
               </Link>
@@ -335,7 +348,7 @@ export function DeckEditor({ deckId }: DeckEditorProps) {
             ))}
           </div>
 
-          <aside className="space-y-6 self-start xl:sticky xl:top-6">
+          <aside className="space-y-6 self-start xl:sticky xl:top-24">
             <DeckStatistics analysis={analysis} />
             <DeckValidation analysis={analysis} />
           </aside>

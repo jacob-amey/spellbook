@@ -48,7 +48,7 @@ function formatPrice(value: string | null, currency = "$") {
 
 export function CardDetailView({ bundle }: { bundle: CardDetailsBundle }) {
   const { card, printings, rulings } = bundle;
-  const otherPrintings = printings.filter((printing) => printing.id !== card.id);
+  const otherPrintings = printings?.cards.filter((printing) => printing.id !== card.id) ?? [];
   const visiblePrintings = otherPrintings.slice(0, 24);
   const marketplaceLinks = [
     { label: "TCGplayer", href: card.purchaseUris.tcgplayer },
@@ -61,13 +61,13 @@ export function CardDetailView({ bundle }: { bundle: CardDetailsBundle }) {
   return (
     <main
       id="main-content"
-      className="min-h-screen bg-paper/70 px-6 py-10 text-ink lg:px-[6vw] lg:py-16"
+      className="py-8 text-ink sm:py-10"
     >
-      <div className="mx-auto max-w-[1440px]">
+      <div className="site-container">
         <nav aria-label="Breadcrumb" className="text-sm text-ink/65">
           <ol className="flex flex-wrap items-center gap-2">
             <li>
-              <Link href="/explore" className="transition hover:text-orange">
+              <Link href="/explore" className="transition hover:text-moss">
                 Explore
               </Link>
             </li>
@@ -86,8 +86,8 @@ export function CardDetailView({ bundle }: { bundle: CardDetailsBundle }) {
               faces={card.cardFaces}
             />
 
-            <section className="mt-5 border border-orange/20 bg-parchment/90 p-5">
-              <p className="text-[11px] font-extrabold uppercase tracking-[0.16em] text-orange">
+            <section className="mt-5 border border-ink/15 bg-parchment/90 p-5">
+              <p className="text-xs font-medium text-moss">
                 Add this card
               </p>
               <div className="mt-4">
@@ -97,13 +97,13 @@ export function CardDetailView({ bundle }: { bundle: CardDetailsBundle }) {
           </aside>
 
           <div className="min-w-0">
-            <header className="border-b border-orange/20 pb-8">
+            <header className="border-b border-ink/15 pb-8">
               <div className="flex flex-wrap items-start justify-between gap-5">
                 <div>
-                  <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-orange">
+                  <p className="text-xs font-medium text-ink/65">
                     {card.setName} · {card.setCode.toUpperCase()} #{card.collectorNumber}
                   </p>
-                  <h1 className="mt-3 font-display text-5xl leading-none tracking-[-0.04em] sm:text-6xl">
+                  <h1 className="mt-3 text-3xl font-semibold leading-tight tracking-tight break-words sm:text-4xl">
                     {card.name}
                   </h1>
                 </div>
@@ -117,27 +117,27 @@ export function CardDetailView({ bundle }: { bundle: CardDetailsBundle }) {
 
               <p className="mt-6 text-xl text-ink/80">{card.typeLine}</p>
 
-              <div className="mt-6 flex flex-wrap gap-2 text-xs font-bold uppercase tracking-[0.1em]">
-                <span className="rounded-full border border-orange/25 px-3 py-2 text-orange">
+              <div className="mt-6 flex flex-wrap gap-2 text-xs font-medium">
+                <span className="rounded-md border border-orange/25 px-3 py-2 text-orange">
                   {formatLabel(card.rarity)}
                 </span>
-                <span className="rounded-full border border-ink/15 px-3 py-2 text-ink/70">
+                <span className="rounded-md border border-ink/15 px-3 py-2 text-ink/70">
                   Mana value {card.manaValue}
                 </span>
-                <span className="rounded-full border border-ink/15 px-3 py-2 text-ink/70">
+                <span className="rounded-md border border-ink/15 px-3 py-2 text-ink/70">
                   {formatDate(card.releasedAt)}
                 </span>
                 {card.colorIdentity.length > 0 && (
-                  <span className="rounded-full border border-moss/25 px-3 py-2 text-moss">
+                  <span className="rounded-md border border-moss/25 px-3 py-2 text-moss">
                     Identity {card.colorIdentity.join("")}
                   </span>
                 )}
               </div>
             </header>
 
-            <section className="grid gap-8 border-b border-orange/15 py-9 md:grid-cols-[minmax(0,1fr)_220px]">
+            <section className="grid gap-8 border-b border-ink/10 py-9 md:grid-cols-[minmax(0,1fr)_220px]">
               <div>
-                <h2 className="font-display text-3xl">Oracle text</h2>
+                <h2 className="text-xl font-semibold tracking-tight">Oracle text</h2>
 
                 {card.cardFaces.length > 1 ? (
                   <div className="mt-5 space-y-6">
@@ -146,7 +146,7 @@ export function CardDetailView({ bundle }: { bundle: CardDetailsBundle }) {
                         key={`${face.name}:${index}`}
                         className="border-l-2 border-orange/35 pl-5"
                       >
-                        <h3 className="font-display text-xl">{face.name}</h3>
+                        <h3 className="text-base font-semibold">{face.name}</h3>
                         <p className="mt-2 whitespace-pre-line text-base leading-7 text-ink/80">
                           {face.oracleText || "This face has no Oracle text."}
                         </p>
@@ -185,7 +185,7 @@ export function CardDetailView({ bundle }: { bundle: CardDetailsBundle }) {
 
               <dl className="grid content-start gap-5 border border-ink/10 bg-paper/45 p-5 text-sm">
                 <div>
-                  <dt className="text-xs font-bold uppercase tracking-[0.12em] text-ink/60">
+                  <dt className="text-xs font-medium text-ink/65">
                     Artist
                   </dt>
                   <dd className="mt-1 text-ink/85">
@@ -195,7 +195,7 @@ export function CardDetailView({ bundle }: { bundle: CardDetailsBundle }) {
                           pathname: "/explore",
                           query: { artist: card.artist },
                         }}
-                        className="transition hover:text-orange"
+                        className="transition hover:text-moss"
                       >
                         {card.artist}
                       </Link>
@@ -206,7 +206,7 @@ export function CardDetailView({ bundle }: { bundle: CardDetailsBundle }) {
                 </div>
                 {(card.power || card.toughness) && (
                   <div>
-                    <dt className="text-xs font-bold uppercase tracking-[0.12em] text-ink/60">
+                    <dt className="text-xs font-medium text-ink/65">
                       Power / toughness
                     </dt>
                     <dd className="mt-1 text-ink/85">
@@ -216,20 +216,20 @@ export function CardDetailView({ bundle }: { bundle: CardDetailsBundle }) {
                 )}
                 {card.loyalty && (
                   <div>
-                    <dt className="text-xs font-bold uppercase tracking-[0.12em] text-ink/60">
+                    <dt className="text-xs font-medium text-ink/65">
                       Loyalty
                     </dt>
                     <dd className="mt-1 text-ink/85">{card.loyalty}</dd>
                   </div>
                 )}
                 <div>
-                  <dt className="text-xs font-bold uppercase tracking-[0.12em] text-ink/60">
+                  <dt className="text-xs font-medium text-ink/65">
                     Language
                   </dt>
                   <dd className="mt-1 uppercase text-ink/85">{card.language}</dd>
                 </div>
                 <div>
-                  <dt className="text-xs font-bold uppercase tracking-[0.12em] text-ink/60">
+                  <dt className="text-xs font-medium text-ink/65">
                     Finish
                   </dt>
                   <dd className="mt-1 text-ink/85">
@@ -239,13 +239,13 @@ export function CardDetailView({ bundle }: { bundle: CardDetailsBundle }) {
               </dl>
             </section>
 
-            <section className="border-b border-orange/15 py-9" aria-labelledby="legality-heading">
+            <section className="border-b border-ink/10 py-9" aria-labelledby="legality-heading">
               <div className="flex flex-wrap items-end justify-between gap-4">
                 <div>
-                  <p className="text-[11px] font-extrabold uppercase tracking-[0.16em] text-orange">
+                  <p className="text-xs font-medium text-moss">
                     FORMAT CHECK
                   </p>
-                  <h2 id="legality-heading" className="mt-2 font-display text-3xl">
+                  <h2 id="legality-heading" className="mt-2 text-xl font-semibold tracking-tight">
                     Card legality
                   </h2>
                 </div>
@@ -271,11 +271,11 @@ export function CardDetailView({ bundle }: { bundle: CardDetailsBundle }) {
               </dl>
             </section>
 
-            <section className="border-b border-orange/15 py-9" aria-labelledby="prices-heading">
-              <p className="text-[11px] font-extrabold uppercase tracking-[0.16em] text-orange">
+            <section className="border-b border-ink/10 py-9" aria-labelledby="prices-heading">
+              <p className="text-xs font-medium text-moss">
                 PRINTING VALUE
               </p>
-              <h2 id="prices-heading" className="mt-2 font-display text-3xl">
+              <h2 id="prices-heading" className="mt-2 text-xl font-semibold tracking-tight">
                 Current prices
               </h2>
 
@@ -289,7 +289,7 @@ export function CardDetailView({ bundle }: { bundle: CardDetailsBundle }) {
                   ["MTGO", formatPrice(card.prices.tix, "")],
                 ].map(([label, value]) => (
                   <div key={label} className="border border-ink/10 bg-paper/45 p-4">
-                    <dt className="text-xs font-bold uppercase tracking-[0.12em] text-ink/60">
+                    <dt className="text-xs font-medium text-ink/65">
                       {label}
                     </dt>
                     <dd className="mt-1 text-lg text-ink/90">{value}</dd>
@@ -305,7 +305,7 @@ export function CardDetailView({ bundle }: { bundle: CardDetailsBundle }) {
                       href={link.href}
                       target="_blank"
                       rel="noreferrer sponsored"
-                      className="min-h-11 border border-ink/20 px-4 py-3 text-sm font-bold transition hover:border-orange hover:text-orange"
+                      className="min-h-11 border border-ink/20 px-4 py-3 text-sm font-bold transition hover:border-moss hover:text-moss"
                     >
                       View on {link.label} ↗
                     </a>
@@ -317,14 +317,14 @@ export function CardDetailView({ bundle }: { bundle: CardDetailsBundle }) {
               </p>
             </section>
 
-            <section className="border-b border-orange/15 py-9" aria-labelledby="printings-heading">
+            <section className="border-b border-ink/10 py-9" aria-labelledby="printings-heading">
               <div className="flex flex-wrap items-end justify-between gap-4">
                 <div>
-                  <p className="text-[11px] font-extrabold uppercase tracking-[0.16em] text-orange">
+                  <p className="text-xs font-medium text-moss">
                     ACROSS THE ARCHIVE
                   </p>
-                  <h2 id="printings-heading" className="mt-2 font-display text-3xl">
-                    {printings.length} paper printing{printings.length === 1 ? "" : "s"}
+                  <h2 id="printings-heading" className="mt-2 text-xl font-semibold tracking-tight">
+                    {printings ? `${printings.totalCards} paper printing${printings.totalCards === 1 ? "" : "s"}` : "Paper printings"}
                   </h2>
                 </div>
                 {otherPrintings.length > visiblePrintings.length && (
@@ -334,13 +334,18 @@ export function CardDetailView({ bundle }: { bundle: CardDetailsBundle }) {
                 )}
               </div>
 
-              {visiblePrintings.length > 0 ? (
+              {printings === null ? (
+                <p className="mt-5 text-sm leading-6 text-orange" role="status">
+                  Alternate printings are temporarily unavailable. Reload this page to retry, or view the source on Scryfall below.
+                </p>
+              ) : visiblePrintings.length > 0 ? (
                 <ul className="card-rail mt-6 flex snap-x gap-4 overflow-x-auto pb-5" aria-label="Other printings">
                   {visiblePrintings.map((printing) => (
                   <li key={printing.id} className="w-40 shrink-0 snap-start">
                     <Link
                       href={`/cards/${printing.id}`}
-                      className="group block h-full border border-ink/10 bg-paper/45 p-2 transition hover:border-orange/45"
+                      prefetch={false}
+                      className="group block h-full border border-ink/10 bg-paper/45 p-2 transition hover:border-moss/45"
                     >
                       <div className="overflow-hidden rounded-lg bg-night">
                         {printing.imageUrl ? (
@@ -360,7 +365,7 @@ export function CardDetailView({ bundle }: { bundle: CardDetailsBundle }) {
                           </div>
                         )}
                       </div>
-                      <p className="mt-3 line-clamp-2 text-sm font-bold leading-5 group-hover:text-orange">
+                      <p className="mt-3 line-clamp-2 text-sm font-bold leading-5 group-hover:text-moss">
                         {printing.setName}
                       </p>
                       <p className="mt-1 text-xs text-ink/60">
@@ -381,14 +386,18 @@ export function CardDetailView({ bundle }: { bundle: CardDetailsBundle }) {
             </section>
 
             <section className="py-9" aria-labelledby="rulings-heading">
-              <p className="text-[11px] font-extrabold uppercase tracking-[0.16em] text-orange">
+              <p className="text-xs font-medium text-moss">
                 OFFICIAL CLARIFICATIONS
               </p>
-              <h2 id="rulings-heading" className="mt-2 font-display text-3xl">
+              <h2 id="rulings-heading" className="mt-2 text-xl font-semibold tracking-tight">
                 Rulings
               </h2>
 
-              {rulings.length > 0 ? (
+              {rulings === null ? (
+                <p className="mt-5 text-sm leading-6 text-orange" role="status">
+                  Rulings are temporarily unavailable. Reload this page to retry, or view the source on Scryfall below.
+                </p>
+              ) : rulings.length > 0 ? (
                 <ol className="mt-6 space-y-4">
                   {rulings.map((ruling) => (
                     <li key={ruling.id} className="grid gap-2 border-l-2 border-moss/30 pl-5 sm:grid-cols-[120px_1fr] sm:gap-5">

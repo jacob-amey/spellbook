@@ -16,13 +16,14 @@ export function CardTile({
   actions,
 }: CardTileProps) {
   return (
-    <article className="group flex h-full flex-col border border-ink/10 bg-paper/55 p-3 shadow-[0_18px_60px_rgb(0_0_0_/_0.18)] transition duration-300 hover:border-orange/30 hover:bg-paper/80">
+    <article className="group flex h-full min-w-0 flex-col rounded-xl border border-ink/10 bg-parchment/50 p-3 shadow-sm transition-colors hover:border-ink/25 hover:bg-parchment/80">
       <Link
         href={`/cards/${card.id}`}
-        className="block"
+        prefetch={false}
+        className="block rounded-lg"
         aria-label={`View details for ${card.name}`}
       >
-        <div className="overflow-hidden rounded-2xl bg-night shadow-[0_14px_35px_rgb(0_0_0_/_0.35)] transition duration-300 group-hover:-translate-y-1">
+        <div className="overflow-hidden rounded-lg bg-night ring-1 ring-white/10">
           {card.imageUrl ? (
             <Image
               src={card.imageUrl}
@@ -43,33 +44,34 @@ export function CardTile({
       </Link>
 
       <div className="mt-4 flex grow flex-col">
-        <div className="flex items-start justify-between gap-4">
-          <h3 className="font-serif text-xl font-semibold">
+        <div className="flex flex-wrap items-start justify-between gap-x-3 gap-y-1.5">
+          <h3 className="min-w-0 text-sm font-semibold leading-5">
             <Link
               href={`/cards/${card.id}`}
-              className="transition hover:text-orange"
+              prefetch={false}
+              className="transition-colors hover:text-moss"
             >
               {card.name}
             </Link>
           </h3>
 
           {card.manaCost && (
-            <span className="shrink-0 text-sm text-ink/60">
+            <span className="text-xs leading-5 tabular-nums text-ink/60">
               {card.manaCost}
             </span>
           )}
         </div>
 
-        <p className="mt-1 text-sm text-ink/60">
+        <p className="mt-2 text-xs leading-5 text-ink/65">
           {card.typeLine}
         </p>
 
-        <p className="mt-2 text-xs uppercase tracking-[0.16em] text-moss/80">
+        <p className="mt-1 text-xs leading-5 text-ink/60">
           {card.setName}
         </p>
 
         {actions && (
-          <div className="mt-4 border-t border-orange/15 pt-4">
+          <div className="mt-4 border-t border-ink/10 pt-3">
             {actions}
           </div>
         )}

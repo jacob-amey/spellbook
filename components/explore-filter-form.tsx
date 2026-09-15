@@ -14,14 +14,29 @@ const TYPED_FILTER_DELAY_MS = 450;
 type ExploreFilterFormProps = {
   children: ReactNode;
   className?: string;
+  valuesKey: string;
 };
 
 export function ExploreFilterForm({
   children,
   className,
+  valuesKey,
 }: ExploreFilterFormProps) {
   const formRef = useRef<HTMLFormElement>(null);
   const submitTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const submittedValuesRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    const form = formRef.current;
+    if (!form) return;
+    const current = JSON.stringify(Array.from(new FormData(form).entries()));
+    // External navigation resets uncontrolled inputs to the new URL defaults.
+    // Preserve any typing that happened while an automatic submission was pending.
+    if (submittedValuesRef.current === null || current === submittedValuesRef.current) {
+      form.reset();
+    }
+    submittedValuesRef.current = null;
+  }, [valuesKey]);
 
   useEffect(
     () => () => {
@@ -60,6 +75,9 @@ export function ExploreFilterForm({
   }
 
   function handleSubmit() {
+    if (formRef.current) {
+      submittedValuesRef.current = JSON.stringify(Array.from(new FormData(formRef.current).entries()));
+    }
     if (submitTimerRef.current) {
       clearTimeout(submitTimerRef.current);
       submitTimerRef.current = null;
@@ -88,7 +106,7 @@ export function ExploreFilterSubmit() {
     <button
       type="submit"
       disabled={pending}
-      className="min-h-12 w-full bg-orange px-5 py-3 text-sm font-bold text-night transition hover:brightness-110 disabled:cursor-wait disabled:opacity-70"
+      className="min-h-11 w-full rounded-md bg-moss px-5 py-3 text-sm font-semibold text-night transition hover:brightness-110 disabled:cursor-wait disabled:opacity-70"
     >
       {pending ? "Updating results…" : "Update results"}
     </button>

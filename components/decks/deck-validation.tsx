@@ -15,14 +15,14 @@ export function DeckValidation({
 
   return (
     <section
-      className="border border-ink/15 bg-paper p-5"
+      className="rounded-xl border border-ink/15 bg-paper p-5"
       aria-labelledby="deck-validation-heading"
     >
       <div className="flex items-start justify-between gap-4">
         <div>
           <h2
             id="deck-validation-heading"
-            className="font-display text-2xl"
+            className="text-xl font-semibold tracking-tight"
           >
             Deck checks
           </h2>

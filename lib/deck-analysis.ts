@@ -49,11 +49,16 @@ function countZone(deck: Deck, zone: DeckZone): number {
     .reduce((total, entry) => total + entry.quantity, 0);
 }
 
+function frontTypes(typeLine: string): string[] {
+  return typeLine.split(" // ")[0].split(" — ")[0].split(/\s+/);
+}
+
 function categorizeType(typeLine: string): CardTypeCategory {
+  const types = frontTypes(typeLine);
   return (
     TYPE_CATEGORIES.find(
       (category) =>
-        category !== "Other" && typeLine.includes(category),
+        category !== "Other" && types.includes(category),
     ) ?? "Other"
   );
 }
@@ -87,20 +92,22 @@ function getCustomCopyLimit(oracleText: string): number | null {
 }
 
 function isUnlimitedCard(typeLine: string, oracleText: string) {
+  const types = frontTypes(typeLine);
   return (
-    typeLine.includes("Basic Land") ||
+    (types.includes("Basic") && types.includes("Land")) ||
     getCustomCopyLimit(oracleText) === Number.POSITIVE_INFINITY
   );
 }
 
-function canBeCommander(typeLine: string, oracleText: string) {
+function canBeCommander(typeLine: string, oracleText: string, allowsBackground: boolean) {
   const normalizedText = oracleText.toLowerCase();
+  const types = frontTypes(typeLine);
 
   return (
-    (typeLine.includes("Legendary") &&
-      typeLine.includes("Creature")) ||
+    (types.includes("Legendary") &&
+      types.includes("Creature")) ||
     normalizedText.includes("can be your commander") ||
-    (typeLine.includes("Legendary") &&
+    (allowsBackground && types.includes("Legendary") &&
       typeLine.includes("Background"))
   );
 }
@@ -184,7 +191,10 @@ function collectValidationIssues(deck: Deck): DeckIssue[] {
     );
 
     for (const entry of commanderEntries) {
-      if (!canBeCommander(entry.card.typeLine, entry.card.oracleText)) {
+      const allowsBackground = commanderEntries.some((other) =>
+        other !== entry && /choose a background/i.test(other.card.oracleText),
+      );
+      if (!canBeCommander(entry.card.typeLine, entry.card.oracleText, allowsBackground)) {
         issues.push(
           createIssue({
             code: "invalid-commander",
@@ -214,6 +224,7 @@ function collectValidationIssues(deck: Deck): DeckIssue[] {
           issues.push(
             createIssue({
               code: "color-identity",
+              id: `color-identity-${entry.card.oracleId}-${entry.zone}`,
               severity: "error",
               oracleId: entry.card.oracleId,
               message: `${entry.card.name} falls outside the commander's color identity.`,
@@ -373,7 +384,7 @@ export function analyzeDeck(deck: Deck): DeckAnalysis {
       }
     }
 
-    if (!entry.card.typeLine.includes("Land")) {
+    if (!frontTypes(entry.card.typeLine).includes("Land")) {
       const manaValue = Math.max(0, entry.card.manaValue);
       const curveIndex = Math.min(7, Math.floor(manaValue));
 

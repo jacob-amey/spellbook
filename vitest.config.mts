@@ -8,6 +8,7 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": projectRoot,
+      "server-only": fileURLToPath(new URL("./node_modules/next/dist/compiled/server-only/empty.js", import.meta.url)),
     },
   },
   test: {
@@ -21,7 +22,9 @@ export default defineConfig({
         "lib/deck-operations.ts",
         "lib/deck-analysis.ts",
         "lib/deck-serialization.ts",
+        "lib/deck-storage.ts",
         "lib/scryfall.ts",
+        "lib/scryfall-server.ts",
       ],
       reporter: ["text", "html"],
       thresholds: {

@@ -1,5 +1,6 @@
 import type { Card } from "@/types/card";
 import {
+  MAX_DECK_ENTRIES,
   type Deck,
   type DeckEntry,
   type DeckZone,
@@ -18,7 +19,6 @@ import {
 export const DECK_STORAGE_VERSION = 1;
 export const MAX_DECK_IMPORT_SIZE = 2_000_000;
 
-const MAX_DECK_ENTRIES = 1_000;
 const SCRYFALL_CARD_ORIGIN = "https://scryfall.com";
 const SCRYFALL_IMAGE_ORIGIN = "https://cards.scryfall.io";
 
@@ -267,10 +267,13 @@ export function parseDeckValue(value: unknown): Deck | null {
   };
 }
 
-export function parseStoredDecks(source: string | null): Deck[] {
-  if (!source) {
-    return [];
-  }
+export type StoredDeckResult = {
+  decks: Deck[];
+  error: string | null;
+};
+
+export function readStoredDecks(source: string | null): StoredDeckResult {
+  if (source === null) return { decks: [], error: null };
 
   try {
     const value: unknown = JSON.parse(source);
@@ -280,15 +283,27 @@ export function parseStoredDecks(source: string | null): Deck[] {
       value.version !== DECK_STORAGE_VERSION ||
       !Array.isArray(value.decks)
     ) {
-      return [];
+      return { decks: [], error: "The saved collection uses an unsupported format. Saving is paused to preserve the original data." };
     }
 
-    return value.decks
+    const decks = value.decks
       .map(parseDeckValue)
       .filter((deck): deck is Deck => deck !== null);
+    const uniqueDecks = Array.from(new Map(decks.map((deck) => [deck.id, deck])).values());
+
+    return {
+      decks: uniqueDecks,
+      error: uniqueDecks.length !== value.decks.length
+        ? "Some saved decks could not be read safely. Saving is paused; readable decks can still be exported."
+        : null,
+    };
   } catch {
-    return [];
+    return { decks: [], error: "The saved collection could not be read. Saving is paused to preserve the original data." };
   }
+}
+
+export function parseStoredDecks(source: string | null): Deck[] {
+  return readStoredDecks(source).decks;
 }
 
 export function serializeStoredDecks(decks: Deck[]): string {

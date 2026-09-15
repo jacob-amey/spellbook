@@ -84,10 +84,10 @@ export function AddToDeckControl({
 
   if (sortedDecks.length === 0) {
     return (
-      <p className="text-sm text-ink/60">
+      <p className="text-xs leading-5 text-ink/60">
         <Link
           href="/decks"
-          className="font-bold text-orange underline underline-offset-2"
+          className="font-medium text-moss underline decoration-moss/30 underline-offset-4 transition-colors hover:decoration-moss"
         >
           Create a deck
         </Link>{" "}
@@ -107,10 +107,9 @@ export function AddToDeckControl({
             Deck for {card.name}
           </span>
           <select
-            key={sortedDecks[0].id}
             name="deckId"
             defaultValue={sortedDecks[0].id}
-            className="w-full border border-ink/20 bg-paper px-3 py-2 text-sm outline-none focus:border-orange focus:ring-2 focus:ring-orange/20"
+            className="min-h-11 w-full rounded-md border border-ink/20 bg-paper px-3 py-2 text-xs focus:border-moss"
           >
             {sortedDecks.map((deck) => (
               <option key={deck.id} value={deck.id}>
@@ -120,7 +119,7 @@ export function AddToDeckControl({
           </select>
         </label>
 
-        <div className="grid grid-cols-[1fr_auto] gap-2">
+        <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-2">
           <label>
             <span className="sr-only">
               Deck section for {card.name}
@@ -128,7 +127,7 @@ export function AddToDeckControl({
             <select
               name="zone"
               defaultValue="mainboard"
-              className="h-full w-full border border-ink/20 bg-paper px-3 py-2 text-sm outline-none focus:border-orange focus:ring-2 focus:ring-orange/20"
+              className="min-h-11 w-full rounded-md border border-ink/20 bg-paper px-3 py-2 text-xs focus:border-moss"
             >
               {DECK_ZONES.map((zone) => (
                 <option key={zone} value={zone}>
@@ -140,7 +139,7 @@ export function AddToDeckControl({
 
           <button
             type="submit"
-            className="bg-forest px-4 py-2 text-sm font-bold text-cream transition hover:bg-fern"
+            className="min-h-11 rounded-md bg-moss px-4 py-2 text-xs font-semibold text-night transition-colors hover:bg-moss/85"
           >
             Add
           </button>

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { pageMetadata } from "@/lib/site";
 
 import { CardDetailView } from "@/components/cards/card-detail-view";
 import { ScryfallApiError } from "@/lib/scryfall";
@@ -31,19 +32,21 @@ export async function generateMetadata({
 
   try {
     const card = await getCardById(cardId);
+    const metadata = pageMetadata(`${card.name} | Spellbook`, `${card.typeLine}. ${card.oracleText}`.slice(0, 155), `/cards/${card.id}`);
 
     return {
-      title: `${card.name} | Spellbook`,
-      description: `${card.typeLine}. ${card.oracleText}`.slice(0, 155),
+      ...metadata,
       openGraph: {
+        ...metadata.openGraph,
         title: `${card.name} | Spellbook`,
         description: card.typeLine,
-        images: card.imageUrl ? [{ url: card.imageUrl }] : [],
+        images: card.imageUrl ? [{ url: card.imageUrl, alt: card.name }] : metadata.openGraph?.images,
       },
+      twitter: { ...metadata.twitter, images: card.imageUrl ? [card.imageUrl] : ["/opengraph-image"] },
     };
   } catch (error) {
     if (error instanceof ScryfallApiError && error.status === 404) {
-      return { title: "Card not found | Spellbook" };
+      return { title: "Card not found | Spellbook", robots: { index: false, follow: true } };
     }
 
     throw error;

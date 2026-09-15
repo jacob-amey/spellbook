@@ -3,6 +3,10 @@ import Link from "next/link";
 import { CardSearch } from "@/components/card-search";
 import { ContinueDeck } from "@/components/continue-deck";
 import { FeaturedCardRail } from "@/components/featured-card-rail";
+import { Icon } from "@/components/ui/icon";
+import { pageMetadata } from "@/lib/site";
+
+export const metadata = pageMetadata("Spellbook — MTG Card Search & Deck Builder", "Search Magic: The Gathering cards, compare printings and rulings, and build your next deck. Explore the catalogue or try a sample deck without an account.", "/");
 
 const quickSearches = [
   { label: "Legendary dragons", query: "t:dragon t:legendary" },
@@ -14,111 +18,86 @@ export default function Home() {
   return (
     <main
       id="main-content"
-      className="min-h-screen overflow-hidden bg-paper/70 text-ink"
+      className="text-ink"
     >
       <section
         id="top"
-        className="relative px-6 py-14 lg:px-[5vw] lg:py-20"
+        className="site-container py-8 sm:py-12 lg:py-14"
       >
-        <div
-          className="pointer-events-none absolute -left-40 top-10 h-96 w-96 rounded-full border border-orange/10"
-          aria-hidden="true"
-        />
-        <div
-          className="pointer-events-none absolute -left-28 top-22 h-72 w-72 rounded-full border border-moss/10"
-          aria-hidden="true"
-        />
-        <span
-          className="absolute right-[7%] top-[12%] text-5xl text-orange/75"
-          aria-hidden="true"
-        >
-          ✦
-        </span>
-
-        <div className="relative z-10 mx-auto grid max-w-[1540px] gap-14 xl:grid-cols-[minmax(390px,0.78fr)_minmax(0,1.22fr)] xl:items-start xl:gap-10 2xl:gap-16">
-          <div className="max-w-2xl xl:pt-5">
+        <div className="grid items-start gap-8 lg:grid-cols-[minmax(300px,0.85fr)_minmax(0,1.65fr)] lg:gap-10 xl:gap-14">
+          <div className="min-w-0 lg:py-6">
             <div>
-              <p className="mb-5 text-[11px] font-extrabold tracking-[0.22em] text-orange">
-                THE MULTIVERSE, CATALOGUED
+              <p className="mb-5 flex items-center gap-2.5 text-xs font-medium text-moss">
+                <Icon name="cards" />
+                Magic: The Gathering
               </p>
 
-              <h1 className="font-display text-5xl leading-[0.96] tracking-[-0.045em] sm:text-6xl 2xl:text-7xl">
-                Find the card.
-                <br />
-                <em className="font-medium text-moss">Build the story.</em>
+              <h1 className="max-w-sm text-[2.125rem] font-semibold leading-[1.12] tracking-[-0.035em] text-balance sm:text-[2.75rem]">
+                Your card catalogue.
               </h1>
 
-              <p className="mt-7 max-w-xl border-l border-orange/45 pl-5 text-base leading-7 text-ink/65 sm:text-lg">
-                Search the complete Magic: The Gathering archive, discover
-                something new, and turn the best ideas into finished decks.
+              <p className="mt-5 max-w-sm text-sm leading-7 text-ink/65">
+                Search the archive, compare printings, and check rulings.
+                Turn the cards you find into your next deck.
               </p>
             </div>
 
-            <div id="search" className="mt-9">
+            <div id="search" className="mt-7">
               <CardSearch id="home-card-search" />
 
-              <div className="mt-5 flex flex-wrap items-center gap-2 text-xs text-ink/60">
-                <span className="mr-1 font-bold uppercase tracking-[0.11em]">
-                  Quick finds
+              <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-0 text-xs text-ink/60">
+                <span className="w-full pb-1 font-medium">
+                  Try a search
                 </span>
                 {quickSearches.map((search) => (
                   <Link
                     key={search.label}
                     href={{ pathname: "/explore", query: { q: search.query } }}
-                    className="rounded-full border border-ink/15 px-3 py-2 text-ink/75 transition hover:border-orange/50 hover:text-orange"
+                    className="inline-flex min-h-9 items-center text-ink/70 underline decoration-ink/20 underline-offset-4 transition-colors hover:text-moss hover:decoration-moss"
                   >
                     {search.label}
                   </Link>
                 ))}
               </div>
 
-              <div className="mt-7 flex flex-wrap gap-3">
+              <div className="mt-4">
                 <Link
                   href="/explore"
-                  className="bg-forest px-5 py-3 text-sm font-bold text-cream transition hover:bg-fern"
+                  className="inline-flex min-h-11 items-center gap-2.5 rounded-md border border-ink/15 bg-parchment/60 px-4 text-sm font-medium text-ink/85 transition-colors hover:border-moss/40 hover:bg-parchment hover:text-moss"
                 >
-                  Advanced Explore
-                </Link>
-                <Link
-                  href="/decks"
-                  className="border border-ink/20 px-5 py-3 text-sm font-bold transition hover:border-orange hover:text-orange"
-                >
-                  Deck builder
+                  <Icon name="filters" /> Advanced search
                 </Link>
               </div>
             </div>
 
-            <div className="mt-8">
+            <div className="mt-8 border-t border-ink/10 pt-6">
               <ContinueDeck />
             </div>
           </div>
 
           <section
             id="featured"
-            className="min-w-0 border-t border-orange/20 pt-7 xl:border-l xl:border-t-0 xl:pl-10 xl:pt-0 2xl:pl-14"
+            className="min-w-0 rounded-xl border border-ink/10 bg-parchment/45 p-4 shadow-sm sm:p-6"
             aria-labelledby="featured-heading"
           >
-            <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+            <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="mb-3 text-[11px] font-extrabold tracking-[0.19em] text-orange">
-                  A RANDOM DRAW
-                </p>
                 <h2
                   id="featured-heading"
-                  className="font-display text-4xl tracking-tight 2xl:text-5xl"
+                  className="text-lg font-semibold tracking-tight"
                 >
-                  Twenty cards. One new idea.
+                  Featured cards
                 </h2>
-                <p className="mt-3 max-w-xl text-sm leading-6 text-ink/65">
-                  Scroll the row for a fresh starting point, or draw again.
+                <p className="mt-1.5 text-xs leading-5 text-ink/60">
+                  A fresh selection from the paper catalogue.
                 </p>
               </div>
 
               <Link
                 href="/explore"
-                className="shrink-0 text-sm font-bold text-orange transition hover:text-cream"
+                className="inline-flex min-h-11 shrink-0 items-center gap-1.5 text-xs font-medium text-moss transition-colors hover:text-ink"
               >
-                Filter cards →
+                Explore all <Icon name="arrow-right" className="h-3.5 w-3.5" />
               </Link>
             </div>
 

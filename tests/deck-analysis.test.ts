@@ -12,6 +12,13 @@ function issueCodes(deck: ReturnType<typeof createDeck>) {
 }
 
 describe("deck statistics", () => {
+  it("counts a spell with a land back face in the mana curve", () => {
+    const card = createCard({ typeLine: "Sorcery // Land", manaValue: 3 });
+    const analysis = analyzeDeck(createDeck({ cards: [createEntry(card, 2)] }));
+    expect(analysis.typeCounts.Sorcery).toBe(2);
+    expect(analysis.typeCounts.Land).toBe(0);
+    expect(analysis.manaCurve[3].count).toBe(2);
+  });
   it("returns empty statistics for an empty deck", () => {
     const analysis = analyzeDeck(createDeck());
 
@@ -111,6 +118,10 @@ describe("deck statistics", () => {
 });
 
 describe("constructed deck checks", () => {
+  it("allows repeated snow basic lands", () => {
+    const card = createCard({ typeLine: "Basic Snow Land — Island", legalities: { modern: "legal" } });
+    expect(issueCodes(createDeck({ format: "modern", cards: [createEntry(card, 24)] }))).not.toContain("copy-limit");
+  });
   it("reports deck size, legality, and copy-limit problems", () => {
     const illegalCard = createCard({
       legalities: {
@@ -206,6 +217,26 @@ describe("constructed deck checks", () => {
 });
 
 describe("commander deck checks", () => {
+  it("does not treat a legendary back face as an eligible front face", () => {
+    const card = createCard({ typeLine: "Creature — Human // Legendary Creature — Human", oracleText: "" });
+    expect(issueCodes(createDeck({ format: "commander", cards: [createEntry(card, 1, "commander")] }))).toContain("invalid-commander");
+  });
+
+  it("requires a commander with Choose a Background for a Background", () => {
+    const background = createCard({ oracleId: "background", typeLine: "Legendary Enchantment — Background", oracleText: "" });
+    const deck = createDeck({ format: "commander", cards: [createEntry(background, 1, "commander")] });
+    expect(issueCodes(deck)).toContain("invalid-commander");
+    const commander = createCard({ typeLine: "Legendary Creature — Human", oracleText: "Choose a Background" });
+    expect(issueCodes({ ...deck, cards: [...deck.cards, createEntry(commander, 1, "commander")] })).not.toContain("invalid-commander");
+  });
+
+  it("assigns distinct issue IDs to copies in different sections", () => {
+    const commander = createCard({ oracleId: "commander", typeLine: "Legendary Creature — Human", colorIdentity: ["U"] });
+    const deck = createDeck({ format: "commander", cards: [createEntry(commander, 1, "commander"), createEntry(), createEntry(createCard(), 1, "sideboard")] });
+    const issues = analyzeDeck(deck).issues.filter((issue) => issue.code === "color-identity");
+    expect(issues).toHaveLength(2);
+    expect(new Set(issues.map((issue) => issue.id)).size).toBe(2);
+  });
   it("reports an empty command zone and incomplete deck size", () => {
     const codes = issueCodes(
       createDeck({ format: "commander" }),

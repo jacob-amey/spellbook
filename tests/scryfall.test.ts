@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
   ScryfallApiError,
+  readScryfallResponse,
   loadFeaturedCards,
   loadNextCardPage,
   normalizeScryfallCard,
@@ -9,64 +10,22 @@ import {
   searchCards,
   shuffleCards,
 } from "@/lib/scryfall";
-import type { ScryfallCard, ScryfallList } from "@/types/scryfall";
+import type { ScryfallCard } from "@/types/scryfall";
 
-function createScryfallCard(
-  id: string,
-  name: string,
-): ScryfallCard {
-  return {
-    id,
-    oracle_id: `oracle-${id}`,
-    name,
-    set: "tst",
-    set_name: "Test Set",
-    collector_number: "1",
-    released_at: "2026-01-01",
-    mana_cost: "{1}",
-    cmc: 1,
-    type_line: "Artifact",
-    oracle_text: "Test rules text.",
-    keywords: [],
-    color_identity: [],
-    legalities: { commander: "legal" },
-    prices: { usd: "1.00" },
-    artist: "Test Artist",
-    rarity: "uncommon",
-    lang: "en",
-    layout: "normal",
-    set_type: "expansion",
-    finishes: ["nonfoil"],
-    foil: false,
-    nonfoil: true,
-    promo: false,
-    scryfall_uri: `https://scryfall.com/card/tst/1/${id}`,
-  };
-}
-
-function createList(
-  cards: ScryfallCard[],
-  overrides: Partial<ScryfallList<ScryfallCard>> = {},
-): ScryfallList<ScryfallCard> {
-  return {
-    object: "list",
-    data: cards,
-    has_more: false,
-    total_cards: cards.length,
-    ...overrides,
-  };
-}
-
-function jsonResponse(payload: unknown): Response {
-  return new Response(JSON.stringify(payload), {
-    status: 200,
-    headers: { "Content-Type": "application/json" },
-  });
-}
+import { createScryfallCard, createList, jsonResponse } from "@/tests/scryfall-fixtures";
 
 afterEach(() => {
   vi.unstubAllGlobals();
   vi.restoreAllMocks();
+});
+
+describe("upstream response handling", () => {
+  it.each([null, {}, "Unavailable"])("preserves HTTP status for malformed error payloads: %j", async (payload) => {
+    await expect(readScryfallResponse(new Response(JSON.stringify(payload), { status: 503 }))).rejects.toMatchObject({ name: "ScryfallApiError", status: 503, code: "upstream_error" });
+  });
+  it.each([200, 502])("reports non-JSON responses without leaking a parser error (%s)", async (status) => {
+    await expect(readScryfallResponse(new Response("<html>Gateway error</html>", { status }))).rejects.toMatchObject({ status: 502, message: "The card service returned an unreadable response. Please try again." });
+  });
 });
 
 describe("shuffleCards", () => {
@@ -83,6 +42,24 @@ describe("shuffleCards", () => {
 });
 
 describe("Scryfall catalogue loading", () => {
+  it("can draw a later page and does not expose a sequential pagination cursor", async () => {
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(jsonResponse(createList([
+        createScryfallCard("a", "Alpha"), createScryfallCard("b", "Beta"),
+      ], { total_cards: 6, has_more: true })))
+      .mockResolvedValueOnce(jsonResponse(createList([
+        createScryfallCard("z", "Zulu"), createScryfallCard("y", "Yew"),
+      ], { total_cards: 6, has_more: false })));
+    vi.stubGlobal("fetch", fetchMock);
+    const controller = new AbortController();
+    const result = await loadFeaturedCards(() => 0.99, controller.signal);
+    expect(new URL(fetchMock.mock.calls[1][0]).searchParams.get("page")).toBe("3");
+    controller.abort();
+    expect(fetchMock.mock.calls[1][1].signal.aborted).toBe(true);
+    expect(result.cards.map((card) => card.name)).toEqual(["Zulu", "Yew"]);
+    expect(result.hasMore).toBe(false);
+    expect(result.nextPage).toBeNull();
+  });
   it("keeps a submitted search on the first matching page", async () => {
     const fetchMock = vi.fn().mockResolvedValue(
       jsonResponse(
@@ -114,7 +91,7 @@ describe("Scryfall catalogue loading", () => {
     expect(requestedUrl.searchParams.get("order")).toBe("usd");
   });
 
-  it("loads and shuffles featured cards with one random-order request", async () => {
+  it("shuffles a single-page featured pool without a second request", async () => {
     const fetchMock = vi.fn().mockResolvedValue(
       jsonResponse(
         createList([
@@ -130,7 +107,7 @@ describe("Scryfall catalogue loading", () => {
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(requestedUrl.searchParams.get("q")).toBe("game:paper");
-    expect(requestedUrl.searchParams.get("order")).toBe("random");
+    expect(requestedUrl.searchParams.get("order")).toBe("name");
     expect(requestedUrl.searchParams.has("page")).toBe(false);
     expect(result.cards.map((card) => card.name)).toEqual([
       "Beta",

@@ -2,6 +2,7 @@ import type { Card } from "@/types/card";
 import {
   DECK_FORMATS,
   DECK_ZONES,
+  MAX_DECK_ENTRIES,
   type Deck,
   type DeckFormat,
   type DeckZone,
@@ -82,6 +83,8 @@ export function addCardToDeckRecord(
   );
 
   if (existingIndex === -1) {
+    if (deck.cards.length >= MAX_DECK_ENTRIES) return deck;
+
     return touchDeck({
       ...deck,
       cards: [...deck.cards, { card, quantity, zone }],

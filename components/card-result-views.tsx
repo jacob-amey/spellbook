@@ -20,7 +20,7 @@ export function CardResultViews({ cards, view }: CardResultViewsProps) {
             key={card.id}
             className="grid gap-5 border border-ink/10 bg-paper/55 p-4 sm:grid-cols-[140px_minmax(0,1fr)] lg:grid-cols-[160px_minmax(0,1fr)_230px]"
           >
-            <Link href={`/cards/${card.id}`} className="block self-start">
+            <Link href={`/cards/${card.id}`} prefetch={false} className="block self-start">
               {card.imageUrl ? (
                 <Image
                   src={card.imageUrl}
@@ -42,8 +42,8 @@ export function CardResultViews({ cards, view }: CardResultViewsProps) {
             <div className="min-w-0">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
-                  <h3 className="font-display text-2xl">
-                    <Link href={`/cards/${card.id}`} className="transition hover:text-orange">
+                  <h3 className="text-lg font-semibold tracking-tight">
+                    <Link href={`/cards/${card.id}`} prefetch={false} className="transition hover:text-orange">
                       {card.name}
                     </Link>
                   </h3>
@@ -89,8 +89,8 @@ export function CardResultViews({ cards, view }: CardResultViewsProps) {
           <tbody className="divide-y divide-ink/10">
             {cards.map((card) => (
               <tr key={card.id} className="align-top transition hover:bg-ink/5">
-                <th scope="row" className="px-4 py-4 font-display text-lg">
-                  <Link href={`/cards/${card.id}`} className="transition hover:text-orange">
+                <th scope="row" className="px-4 py-4 text-sm font-semibold">
+                  <Link href={`/cards/${card.id}`} prefetch={false} className="transition hover:text-orange">
                     {card.name}
                   </Link>
                   {card.manaCost && <code className="mt-1 block text-xs font-normal text-moss">{card.manaCost}</code>}

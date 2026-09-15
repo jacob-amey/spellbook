@@ -5,29 +5,12 @@ import {
   serializeDeckExport,
   serializeDeckText,
 } from "@/lib/deck-serialization";
+import { downloadFile } from "@/lib/download-file";
 import type { Deck } from "@/types/deck";
 
 type DeckExportControlsProps = {
   deck: Deck;
 };
-
-function downloadFile(
-  contents: string,
-  fileName: string,
-  type: string,
-) {
-  const blob = new Blob([contents], { type });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-
-  link.href = url;
-  link.download = fileName;
-  document.body.append(link);
-  link.click();
-  link.remove();
-
-  window.setTimeout(() => URL.revokeObjectURL(url), 1_000);
-}
 
 export function DeckExportControls({
   deck,

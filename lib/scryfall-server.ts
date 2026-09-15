@@ -1,7 +1,9 @@
 import "server-only";
+import { cache } from "react";
 
 import {
   normalizeScryfallCardDetails,
+  readScryfallResponse,
   ScryfallApiError,
 } from "@/lib/scryfall";
 import type {
@@ -12,7 +14,6 @@ import type {
 import type {
   ScryfallAutocomplete,
   ScryfallCard,
-  ScryfallError,
   ScryfallList,
   ScryfallRuling,
 } from "@/types/scryfall";
@@ -47,12 +48,9 @@ async function requestScryfall<T>(
   const response = await fetch(url, {
     headers: SCRYFALL_HEADERS,
     next: { revalidate: 3_600 },
+    signal: AbortSignal.timeout(15_000),
   });
-  const payload: unknown = await response.json();
-
-  if (!response.ok) {
-    throw new ScryfallApiError(payload as ScryfallError);
-  }
+  const payload = await readScryfallResponse(response);
 
   return payload as T;
 }
@@ -63,17 +61,17 @@ function assertScryfallId(value: string, label: string) {
   }
 }
 
-export async function getCardById(cardId: string): Promise<CardDetails> {
+export const getCardById = cache(async (cardId: string): Promise<CardDetails> => {
   assertScryfallId(cardId, "card identifier");
 
   const card = await requestScryfall<ScryfallCard>(`/cards/${cardId}`);
 
   return normalizeScryfallCardDetails(card);
-}
+});
 
 export async function getCardPrintings(
   oracleId: string,
-): Promise<CardDetails[]> {
+): Promise<NonNullable<CardDetailsBundle["printings"]>> {
   assertScryfallId(oracleId, "Oracle identifier");
 
   const searchParams = new URLSearchParams({
@@ -82,12 +80,18 @@ export async function getCardPrintings(
     order: "released",
     dir: "desc",
   });
-  const result = await requestScryfall<ScryfallList<ScryfallCard>>(
-    "/cards/search",
-    searchParams,
-  );
-
-  return result.data.map(normalizeScryfallCardDetails);
+  try {
+    const result = await requestScryfall<ScryfallList<ScryfallCard>>(
+      "/cards/search",
+      searchParams,
+    );
+    return { cards: result.data.map(normalizeScryfallCardDetails), totalCards: result.total_cards ?? result.data.length };
+  } catch (error) {
+    if (error instanceof ScryfallApiError && error.status === 404 && error.code === "not_found") {
+      return { cards: [], totalCards: 0 };
+    }
+    throw error;
+  }
 }
 
 export async function getCardRulings(
@@ -111,12 +115,16 @@ export async function getCardDetailsBundle(
   cardId: string,
 ): Promise<CardDetailsBundle> {
   const card = await getCardById(cardId);
-  const [printings, rulings] = await Promise.all([
+  const [printings, rulings] = await Promise.allSettled([
     getCardPrintings(card.oracleId),
     getCardRulings(card.id),
   ]);
 
-  return { card, printings, rulings };
+  return {
+    card,
+    printings: printings.status === "fulfilled" ? printings.value : null,
+    rulings: rulings.status === "fulfilled" ? rulings.value : null,
+  };
 }
 
 export async function autocompleteCardNames(
@@ -133,5 +141,8 @@ export async function autocompleteCardNames(
     new URLSearchParams({ q: normalizedQuery, include_extras: "false" }),
   );
 
-  return result.data.slice(0, 8);
+  if (!result || !Array.isArray(result.data)) {
+    throw new ScryfallApiError({ details: "Card suggestions are temporarily unavailable." });
+  }
+  return [...new Set(result.data.filter((name): name is string => typeof name === "string" && name.trim().length > 0))].slice(0, 8);
 }

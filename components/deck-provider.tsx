@@ -18,8 +18,6 @@ import {
 } from "@/lib/deck-operations";
 import {
   parseDeckValue,
-  parseStoredDecks,
-  serializeStoredDecks,
 } from "@/lib/deck-serialization";
 import type { Card } from "@/types/card";
 import type {
@@ -28,13 +26,20 @@ import type {
   DeckZone,
 } from "@/types/deck";
 
-const STORAGE_KEY = "spellbook.decks";
+import {
+  createDeckStorage,
+  DECK_STORAGE_KEY as STORAGE_KEY,
+  EMPTY_DECK_SNAPSHOT,
+  type DeckStorageSnapshot,
+} from "@/lib/deck-storage";
+
+const deckStorage = createDeckStorage(() => window.localStorage);
 const DECKS_CHANGED_EVENT = "spellbook:decks-changed";
-const EMPTY_DECKS: Deck[] = [];
 
 type DeckContextValue = {
   decks: Deck[];
   isReady: boolean;
+  storageError: string | null;
   createDeck: (
     name: string,
     format: DeckFormat,
@@ -78,30 +83,12 @@ type StoreListener = () => void;
 
 const DeckContext = createContext<DeckContextValue | null>(null);
 
-let cachedStorageValue: string | null | undefined;
-let cachedDecks: Deck[] = EMPTY_DECKS;
-
-function getDeckSnapshot(): Deck[] {
-  let storedValue: string | null;
-
-  try {
-    storedValue = window.localStorage.getItem(STORAGE_KEY);
-  } catch {
-    return cachedDecks;
-  }
-
-  if (storedValue === cachedStorageValue) {
-    return cachedDecks;
-  }
-
-  cachedStorageValue = storedValue;
-  cachedDecks = parseStoredDecks(storedValue);
-
-  return cachedDecks;
+function getDeckSnapshot(): DeckStorageSnapshot {
+  return deckStorage.read();
 }
 
-function getServerDeckSnapshot(): Deck[] {
-  return EMPTY_DECKS;
+function getServerDeckSnapshot(): DeckStorageSnapshot {
+  return EMPTY_DECK_SNAPSHOT;
 }
 
 function subscribeToDecks(
@@ -135,33 +122,18 @@ function subscribeToDecks(
   };
 }
 
-function saveDecks(decks: Deck[]): boolean {
-  const storedValue = serializeStoredDecks(decks);
-
-  try {
-    window.localStorage.setItem(
-      STORAGE_KEY,
-      storedValue,
-    );
-  } catch {
-    return false;
-  }
-
-  cachedStorageValue = storedValue;
-  cachedDecks = decks;
-
-  window.dispatchEvent(
-    new Event(DECKS_CHANGED_EVENT),
-  );
-
-  return true;
+function saveDecks(decks: Deck[], expected: DeckStorageSnapshot): boolean {
+  const wasSaved = deckStorage.write(decks, expected);
+  window.dispatchEvent(new Event(DECKS_CHANGED_EVENT));
+  return wasSaved;
 }
 
 function updateStoredDeck(
   deckId: string,
   transform: (deck: Deck) => Deck,
 ): boolean {
-  const decks = getDeckSnapshot();
+  const snapshot = getDeckSnapshot();
+  const decks = snapshot.decks;
   const deckIndex = decks.findIndex(
     (deck) => deck.id === deckId,
   );
@@ -180,7 +152,7 @@ function updateStoredDeck(
 
   nextDecks[deckIndex] = updatedDeck;
 
-  return saveDecks(nextDecks);
+  return saveDecks(nextDecks, snapshot);
 }
 
 function createDeck(
@@ -209,14 +181,16 @@ function createDeck(
     updatedAt: timestamp,
   };
 
-  const decks = getDeckSnapshot();
-  const wasSaved = saveDecks([...decks, newDeck]);
+  const snapshot = getDeckSnapshot();
+  const decks = snapshot.decks;
+  const wasSaved = saveDecks([...decks, newDeck], snapshot);
 
   return wasSaved ? deckId : null;
 }
 
 function deleteDeck(deckId: string): boolean {
-  const decks = getDeckSnapshot();
+  const snapshot = getDeckSnapshot();
+  const decks = snapshot.decks;
   const nextDecks = decks.filter(
     (deck) => deck.id !== deckId,
   );
@@ -225,7 +199,7 @@ function deleteDeck(deckId: string): boolean {
     return false;
   }
 
-  return saveDecks(nextDecks);
+  return saveDecks(nextDecks, snapshot);
 }
 
 function renameDeck(deckId: string, name: string): boolean {
@@ -306,8 +280,9 @@ function importDeck(deck: Deck): string | null {
     updatedAt: timestamp,
   };
 
-  const decks = getDeckSnapshot();
-  const wasSaved = saveDecks([...decks, importedDeck]);
+  const snapshot = getDeckSnapshot();
+  const decks = snapshot.decks;
+  const wasSaved = saveDecks([...decks, importedDeck], snapshot);
 
   return wasSaved ? deckId : null;
 }
@@ -327,7 +302,7 @@ function getServerReady(): boolean {
 export function DeckProvider({
   children,
 }: DeckProviderProps) {
-  const decks = useSyncExternalStore(
+  const snapshot = useSyncExternalStore(
     subscribeToDecks,
     getDeckSnapshot,
     getServerDeckSnapshot,
@@ -342,7 +317,8 @@ export function DeckProvider({
   return (
     <DeckContext.Provider
       value={{
-        decks,
+        decks: snapshot.decks,
+        storageError: snapshot.error,
         isReady,
         createDeck,
         deleteDeck,

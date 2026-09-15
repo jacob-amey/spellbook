@@ -6,7 +6,6 @@ import type {
 import type {
   ScryfallCard,
   ScryfallCardFace,
-  ScryfallError,
   ScryfallList,
 } from "@/types/scryfall";
 
@@ -26,19 +25,29 @@ export const SCRYFALL_SORT_ORDERS = [
 export type ScryfallSortOrder = (typeof SCRYFALL_SORT_ORDERS)[number];
 export type ScryfallUniqueMode = "cards" | "prints";
 
-type ScryfallRequestOrder = ScryfallSortOrder | "random";
-
 export class ScryfallApiError extends Error {
   status: number;
   code: string;
 
-  constructor(error: ScryfallError) {
-    super(error.details || "Scryfall could not complete the request");
+  constructor(error: unknown, status = 502) {
+    const payload = error && typeof error === "object" ? error as Record<string, unknown> : {};
+    super(typeof payload.details === "string" && payload.details ? payload.details : "Scryfall could not complete the request");
 
     this.name = "ScryfallApiError";
-    this.status = error.status;
-    this.code = error.code;
+    this.status = typeof payload.status === "number" ? payload.status : status;
+    this.code = typeof payload.code === "string" ? payload.code : "upstream_error";
   }
+}
+
+export async function readScryfallResponse(response: Response): Promise<unknown> {
+  let payload: unknown;
+  try {
+    payload = await response.json();
+  } catch {
+    throw new ScryfallApiError({ details: "The card service returned an unreadable response. Please try again." }, response.ok ? 502 : response.status);
+  }
+  if (!response.ok) throw new ScryfallApiError(payload, response.status);
+  return payload;
 }
 
 function combineFaceText(
@@ -159,7 +168,7 @@ export function shuffleCards<T>(
 
 function createSearchUrl(
   query: string,
-  order: ScryfallRequestOrder = "name",
+  order: ScryfallSortOrder = "name",
   unique: ScryfallUniqueMode = "cards",
   page?: number,
 ): URL {
@@ -181,17 +190,15 @@ async function requestCardPage(
   signal?: AbortSignal,
 ): Promise<CardSearchPage> {
   const response = await fetch(url, {
-    signal,
+    signal: signal
+      ? AbortSignal.any([signal, AbortSignal.timeout(15_000)])
+      : AbortSignal.timeout(15_000),
     headers: {
       Accept: "application/json;q=0.9,*/*;q=0.8",
     },
   });
 
-  const payload = await response.json();
-
-  if (!response.ok) {
-    throw new ScryfallApiError(payload as ScryfallError);
-  }
+  const payload = await readScryfallResponse(response);
 
   const result = payload as ScryfallList<ScryfallCard>;
 
@@ -208,14 +215,26 @@ export async function loadFeaturedCards(
   random: () => number = Math.random,
   signal?: AbortSignal,
 ): Promise<CardSearchPage> {
-  const selectedPage = await requestCardPage(
-    createSearchUrl(FEATURED_QUERY, "random"),
+  const firstPage = await requestCardPage(
+    createSearchUrl(FEATURED_QUERY),
     signal,
   );
+  // Scryfall search does not randomize order. Choose a page using its actual
+  // result count, then shuffle locally; avoid one API call per featured card.
+  const pageCount = firstPage.cards.length > 0 && firstPage.hasMore
+    ? Math.ceil(firstPage.totalCards / firstPage.cards.length)
+    : 1;
+  const pageNumber = Math.floor(random() * pageCount) + 1;
+  const selectedPage = pageNumber === 1
+    ? firstPage
+    : await requestCardPage(createSearchUrl(FEATURED_QUERY, "name", "cards", pageNumber), signal);
 
   return {
     ...selectedPage,
     cards: shuffleCards(selectedPage.cards, random),
+    // A random draw is a finite selection, not a cursor into name-ordered results.
+    hasMore: false,
+    nextPage: null,
   };
 }
 
@@ -239,6 +258,7 @@ export async function searchCards(
 
 export async function loadNextCardPage(
   nextPageUrl: string,
+  signal?: AbortSignal,
 ): Promise<CardSearchPage> {
   const url = new URL(nextPageUrl);
 
@@ -246,5 +266,5 @@ export async function loadNextCardPage(
     throw new Error("The next page URL did not come from Scryfall");
   }
 
-  return requestCardPage(url);
+  return requestCardPage(url, signal);
 }
