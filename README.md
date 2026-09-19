@@ -30,37 +30,6 @@ More screenshots: [filtered Explore](docs/screenshots/explore.png) ·
 The sample is a small teaching deck, not a tournament list. Its stored card
 snapshots are dated; prices are omitted to avoid presenting old prices as current.
 
-## Run locally
-
-Install **Node.js 24** and npm, then open a terminal in this repository.
-If you already use nvm, `nvm use` selects the version in `.nvmrc`.
-
-```bash
-npm ci
-npm run dev
-```
-
-Open [localhost:3000](http://localhost:3000). No `.env.local` is needed.
-Live search, card images, and details require access to Scryfall. The build also
-downloads Google fonts through `next/font`; pages serve those fonts locally.
-
-To run the production version:
-
-```bash
-npm run build
-npm start
-```
-
-## What it demonstrates
-
-| Engineering concern | Implementation |
-| --- | --- |
-| Shareable application state | Validated URL parameters generate composable Scryfall filters; inputs apply on selection or after a typing pause. |
-| External service integration | Typed card normalization, request cancellation and timeouts, pagination, cached server lookups, and partial failures for supplemental details. |
-| Domain modeling | Deck operations, format checks, statistics, and import/export are separate from React components. |
-| Reliable persistence | Versioned browser storage, cross-tab notifications, validation of imports, and protection against overwriting unreadable data. |
-| Accessible interaction | Keyboard autocomplete, visible focus, labeled inputs, responsive filters, status messages, and reduced-motion support. |
-| Verification | Vitest domain tests, coverage thresholds, production-browser workflow tests, and axe accessibility checks in CI. |
 
 ## Features
 
@@ -76,34 +45,6 @@ npm start
 - A sample deck that can be opened and edited without an initial API request.
 - Loading, empty, retry, missing-card, and storage-recovery states.
 
-## Verify changes
-
-Install the browser once:
-
-```bash
-npx playwright install chromium
-```
-
-Then run the complete local check:
-
-```bash
-npm run verify
-```
-
-| Command | Purpose |
-| --- | --- |
-| `npm run check` | ESLint, route type generation, TypeScript, and unit tests |
-| `npm run test:coverage` | Domain coverage report and enforced thresholds |
-| `npm run build` | Production compilation and static-route generation |
-| `npm run test:e2e` | Desktop and mobile Chromium tests against the built app |
-| `npm run test:e2e:ui` | Interactive browser test runner; build first |
-| `npm run icons` | Regenerate the multi-size favicon and Apple touch icon from `app/icon.svg` |
-
-Browser tests launch their own production server on port **3217** and use
-isolated browser profiles. Search and autocomplete responses are mocked at the
-network boundary for repeatability. These tests do not validate Scryfall uptime
-or replace a live smoke test. Reports are retained as GitHub Actions artifacts.
-
 ## Project map
 
 ```text
@@ -117,32 +58,6 @@ database/schema.sql   Reference PostgreSQL model (not an applied migration)
 docs/                 Architecture, test scope, deployment, and backend roadmap
 .github/              CI, dependency updates, issue and pull-request templates
 ```
-
-## Scope and limitations
-
-Decks are stored **in the current browser and origin**. They do not sync between
-devices, localhost, preview deployments, and the production domain. Export JSON
-before clearing site data. Concurrent-tab checks reduce accidental overwrites
-but localStorage is not a transactional database.
-
-Format checks are deck-building guidance, not a complete tournament rules engine.
-Card snapshots can become stale after format changes. Random discovery samples
-a result page and shuffles it; it is not an independent uniform draw of every card
-in the archive. A cached pool makes repeat homepage draws responsive.
-
-The database schema and repository contracts are **design groundwork only**.
-There is no deployed authentication service, database, account sync, or AWS/Azure
-integration. See [the backend milestone](docs/backend-readiness.md) for the
-implementation and authorization tests required to add them.
-
-## Deploy
-
-Host the source on GitHub and deploy the app to a Next.js-capable host.
-The recommended quick path is **Vercel**, using the repository integration,
-`npm ci`, `npm run build`, and Node.js 24. See the
-[deployment walkthrough](docs/deployment.md), including how to add a public demo
-link and verify it from a signed-out browser. GitHub Pages cannot run this app's
-server-rendered routes or autocomplete API.
 
 ## Data and acknowledgments
 
