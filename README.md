@@ -1,5 +1,7 @@
 # Spellbook
 
+Live Demo Link:https://spellbook-kohl.vercel.app
+
 A Magic: The Gathering card research and deck-building app built with **Next.js,
 React, TypeScript, and Tailwind CSS**. Search the Scryfall archive, compare
 printings and rulings, and build decks that survive browser reloads.
